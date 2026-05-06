@@ -1,60 +1,78 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
 import { Textarea } from './ui/textarea';
 import { Button } from './ui/button';
 
 const categories = ["Fantasy", "Sci-Fi", "Horror", "Abstract", "Mythological", "Cosmic"];
-const loadingMessages = [
-  "Interpreting subconscious signals...",
-  "Mapping dream fragments...",
-  "Calibrating neural pathways...",
-  "Generating universe matrix...",
-  "Crystallizing dreamscape..."
+
+const loadingPhases = [
+  { message: "Interpreting subconscious signals...", progress: 15 },
+  { message: "Mapping dream fragments...", progress: 32 },
+  { message: "Calibrating neural pathways...", progress: 51 },
+  { message: "Generating universe matrix...", progress: 73 },
+  { message: "Crystallizing dreamscape...", progress: 90 },
+  { message: "Universe stabilized.", progress: 100 },
 ];
 
-export function DreamGenerator({ onGenerateComplete }: { onGenerateComplete: () => void }) {
-  const [dreamText, setDreamText] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("Sci-Fi");
+interface DreamGeneratorProps {
+  onGenerateStart: (text: string, category: string) => void;
+  onGenerateComplete: () => void;
+}
+
+export function DreamGenerator({ onGenerateStart, onGenerateComplete }: DreamGeneratorProps) {
+  const [dreamText, setDreamText] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('Sci-Fi');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [loadingIndex, setLoadingIndex] = useState(0);
+  const [phaseIndex, setPhaseIndex] = useState(0);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    let timeout: NodeJS.Timeout;
-    
-    if (isGenerating) {
-      interval = setInterval(() => {
-        setLoadingIndex((prev) => (prev + 1) % loadingMessages.length);
-      }, 1500);
+    if (!isGenerating) return;
 
-      timeout = setTimeout(() => {
-        setIsGenerating(false);
-        onGenerateComplete();
-      }, 7500);
-    }
-
-    return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
+    let currentPhase = 0;
+    const advance = () => {
+      if (currentPhase < loadingPhases.length - 1) {
+        currentPhase++;
+        setPhaseIndex(currentPhase);
+        const delay = currentPhase === loadingPhases.length - 1 ? 1000 : 1300;
+        setTimeout(advance, delay);
+      } else {
+        setTimeout(() => {
+          setIsGenerating(false);
+          setPhaseIndex(0);
+          onGenerateComplete();
+        }, 800);
+      }
     };
+    const t = setTimeout(advance, 1300);
+    return () => clearTimeout(t);
   }, [isGenerating, onGenerateComplete]);
+
+  const handleGenerate = () => {
+    if (!dreamText.trim()) return;
+    setPhaseIndex(0);
+    setIsGenerating(true);
+    onGenerateStart(dreamText, selectedCategory);
+  };
+
+  const phase = loadingPhases[phaseIndex];
 
   return (
     <section id="generate" className="py-24 relative z-10">
       <div className="container max-w-4xl mx-auto px-6">
-        <div className="glass p-8 md:p-12 rounded-3xl border border-primary/20 shadow-[0_0_40px_rgba(140,80,255,0.05)] relative overflow-hidden">
-          {/* Subtle background glow */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
+        <div
+          className="glass p-8 md:p-12 rounded-3xl border border-primary/20 relative overflow-hidden"
+          style={{ boxShadow: '0 0 50px rgba(140,80,255,0.06)' }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/4 via-transparent to-secondary/4 pointer-events-none" />
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-10"
+            className="text-center mb-10 relative z-10"
           >
-            <h2 className="font-orbitron font-bold text-3xl md:text-4xl mb-4 gradient-text">GENERATE YOUR DREAM UNIVERSE</h2>
-            <p className="text-muted-foreground text-lg">Describe any dream, vision, or subconscious fragment...</p>
+            <h2 className="font-orbitron font-bold text-3xl md:text-4xl mb-3 gradient-text">GENERATE YOUR DREAM UNIVERSE</h2>
+            <p className="text-muted-foreground">Describe any dream, vision, or subconscious fragment...</p>
           </motion.div>
 
           <AnimatePresence mode="wait">
@@ -63,32 +81,33 @@ export function DreamGenerator({ onGenerateComplete }: { onGenerateComplete: () 
                 key="form"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="space-y-8 relative z-10"
+                exit={{ opacity: 0, scale: 0.98 }}
+                className="space-y-7 relative z-10"
               >
-                <div>
-                  <Textarea
-                    placeholder="Describe your dream... I saw endless violet skies with towers of crystal dissolving into golden rain..."
-                    className="min-h-[200px] glass bg-background/40 border-primary/30 focus:border-primary focus:ring-primary/50 resize-none text-lg p-6 rounded-2xl"
-                    value={dreamText}
-                    onChange={(e) => setDreamText(e.target.value)}
-                    data-testid="input-dream-text"
-                  />
-                </div>
+                <Textarea
+                  placeholder="Describe your dream... I saw endless violet skies with towers of crystal dissolving into golden rain..."
+                  className="min-h-[200px] bg-background/40 border-primary/30 focus:border-primary focus:ring-primary/30 resize-none text-base p-6 rounded-2xl placeholder:text-muted-foreground/40 transition-all duration-300"
+                  style={{ boxShadow: '0 0 0 0 rgba(140,80,255,0)' }}
+                  value={dreamText}
+                  onChange={(e) => setDreamText(e.target.value)}
+                  data-testid="input-dream-text"
+                />
 
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wider font-orbitron">Select Category</label>
-                  <div className="flex flex-wrap gap-3">
+                  <label className="block text-xs font-orbitron text-muted-foreground mb-4 uppercase tracking-widest">
+                    Dream Category
+                  </label>
+                  <div className="flex flex-wrap gap-2.5">
                     {categories.map((cat) => (
                       <button
                         key={cat}
                         onClick={() => setSelectedCategory(cat)}
-                        className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 border ${
-                          selectedCategory === cat
-                            ? 'bg-primary/20 border-primary text-primary neon-glow'
-                            : 'glass border-primary/10 text-muted-foreground hover:border-primary/50 hover:text-foreground'
-                        }`}
                         data-testid={`button-category-${cat}`}
+                        className={`px-5 py-2 rounded-full text-sm font-orbitron font-medium transition-all duration-300 border ${
+                          selectedCategory === cat
+                            ? 'bg-primary/20 border-primary text-primary shadow-[0_0_15px_rgba(140,80,255,0.3)]'
+                            : 'glass border-primary/10 text-muted-foreground hover:border-primary/40 hover:text-foreground'
+                        }`}
                       >
                         {cat}
                       </button>
@@ -96,40 +115,69 @@ export function DreamGenerator({ onGenerateComplete }: { onGenerateComplete: () 
                   </div>
                 </div>
 
-                <Button
-                  className="w-full h-16 text-lg font-orbitron font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl neon-glow transition-all duration-300 group"
-                  onClick={() => dreamText.trim() && setIsGenerating(true)}
+                <motion.button
+                  onClick={handleGenerate}
                   disabled={!dreamText.trim()}
                   data-testid="button-generate-submit"
+                  className="w-full h-16 font-orbitron font-bold text-lg text-white rounded-2xl relative overflow-hidden group disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300"
+                  style={{ background: 'linear-gradient(135deg, #7c3aed, #4f46e5, #7c3aed)', backgroundSize: '200% 100%' }}
+                  whileHover={dreamText.trim() ? { scale: 1.01 } : {}}
+                  whileTap={dreamText.trim() ? { scale: 0.99 } : {}}
                 >
-                  <span className="group-hover:tracking-widest transition-all duration-300">GENERATE UNIVERSE</span>
-                </Button>
+                  <div
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{ background: 'linear-gradient(135deg, #9333ea, #6366f1)' }}
+                  />
+                  <div
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{ boxShadow: 'inset 0 0 30px rgba(255,255,255,0.05)' }}
+                  />
+                  <span className="relative z-10 group-hover:tracking-widest transition-all duration-300">
+                    GENERATE UNIVERSE
+                  </span>
+                </motion.button>
               </motion.div>
             ) : (
               <motion.div
                 key="loading"
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="flex flex-col items-center justify-center py-12 min-h-[400px]"
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="flex flex-col items-center justify-center py-16 gap-10 min-h-[380px]"
               >
-                <div className="relative mb-8">
-                  <div className="w-24 h-24 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+                <div className="relative">
+                  <div className="w-28 h-28 rounded-full border-[3px] border-primary/20 border-t-primary animate-spin" />
+                  <div className="absolute -inset-5 rounded-full border border-secondary/20 border-b-secondary animate-[spin_3s_linear_infinite_reverse]" />
+                  <div className="absolute -inset-10 rounded-full border border-primary/10 animate-[spin_6s_linear_infinite]" />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse-glow" />
+                    <div className="w-4 h-4 rounded-full bg-primary/80 blur-sm animate-pulse-glow" />
                   </div>
-                  {/* Additional rings */}
-                  <div className="absolute -inset-4 rounded-full border border-secondary/30 border-b-secondary animate-[spin_3s_linear_infinite_reverse]" />
                 </div>
-                <motion.p
-                  key={loadingIndex}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="font-orbitron text-xl text-primary neon-text h-8"
-                >
-                  {loadingMessages[loadingIndex]}
-                </motion.p>
+
+                <div className="w-full max-w-sm space-y-3 text-center">
+                  <AnimatePresence mode="wait">
+                    <motion.p
+                      key={phaseIndex}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      className={`font-orbitron text-lg neon-text ${phase.progress === 100 ? 'text-green-400' : 'text-primary'}`}
+                    >
+                      {phase.message}
+                    </motion.p>
+                  </AnimatePresence>
+
+                  <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
+                    <motion.div
+                      className="h-full rounded-full"
+                      style={{ background: 'linear-gradient(90deg, #7c3aed, #3b82f6)' }}
+                      initial={{ width: '0%' }}
+                      animate={{ width: `${phase.progress}%` }}
+                      transition={{ duration: 0.8, ease: 'easeOut' }}
+                    />
+                  </div>
+                  <p className="text-xs font-mono text-muted-foreground/50">{phase.progress}% complete</p>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

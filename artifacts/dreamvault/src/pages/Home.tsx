@@ -15,9 +15,11 @@ import { Footer } from '@/components/Footer';
 
 export default function Home() {
   const [dreamGenerated, setDreamGenerated] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [dreamText, setDreamText] = useState('');
+  const [category, setCategory] = useState('');
 
   useEffect(() => {
-    // Force dark mode on body
     document.documentElement.classList.add('dark');
     document.body.classList.add('dark');
     document.body.style.backgroundColor = 'hsl(220 30% 4%)';
@@ -27,21 +29,34 @@ export default function Home() {
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-primary/30 selection:text-primary-foreground">
       <ParticleField />
       <Navbar />
-      
+
       <main>
         <HeroSection />
-        
-        <DreamGenerator 
+
+        <DreamGenerator
+          onGenerateStart={(text, cat) => {
+            setDreamText(text);
+            setCategory(cat);
+            setIsGenerating(true);
+            setDreamGenerated(false);
+          }}
           onGenerateComplete={() => {
+            setIsGenerating(false);
             setDreamGenerated(true);
             setTimeout(() => {
               window.scrollBy({ top: 500, behavior: 'smooth' });
-            }, 100);
-          }} 
+            }, 150);
+          }}
         />
-        
-        {dreamGenerated && <DreamResult onReset={() => setDreamGenerated(false)} />}
-        
+
+        {dreamGenerated && (
+          <DreamResult
+            onReset={() => { setDreamGenerated(false); setDreamText(''); setCategory(''); }}
+            dreamText={dreamText}
+            category={category}
+          />
+        )}
+
         <FeaturesSection />
         <HowItWorksSection />
         <AIPipelineSection />
@@ -51,7 +66,7 @@ export default function Home() {
       </main>
 
       <Footer />
-      <NoxAssistant />
+      <NoxAssistant isGenerating={isGenerating} />
     </div>
   );
 }

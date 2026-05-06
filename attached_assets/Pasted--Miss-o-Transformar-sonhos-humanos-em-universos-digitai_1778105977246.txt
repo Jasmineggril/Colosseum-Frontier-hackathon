@@ -1,0 +1,147 @@
+# Missão
+
+Transformar sonhos humanos em universos digitais vivos através de inteligência artificial e tecnologia blockchain, criando uma nova forma de expressão, propriedade digital e exploração criativa no ecossistema Web3.
+
+# Visão
+
+Ser a principal plataforma global de criação de universos subconscientes impulsionados por IA, conectando criatividade, identidade digital e experiências imersivas na nova geração da internet.
+
+# Valores
+
+* Criatividade sem limites
+* Inovação futurista
+* Liberdade de expressão digital
+* Propriedade descentralizada
+* Experiências imersivas
+* Comunidade colaborativa
+* Ética em IA
+* Exploração do subconsciente
+* Design premium e emocional
+* Tecnologia acessível e inspiradora
+
+---
+
+# CHECKLIST DREAMVAULT — NÍVEL HACKATHON FORTE
+
+## 🔥 IDENTIDADE & BRANDING
+
+* [ ] Logo final refinada
+* [ ] NOX totalmente integrado
+* [ ] Frases próprias do universo
+* [ ] Linguagem futurista consistente
+* [ ] Identidade visual fechada
+* [ ] Background vivo
+* [ ] Glow e partículas funcionando
+
+---
+
+# 🎬 EXPERIÊNCIA CINEMATOGRÁFICA
+
+* [ ] Loading cinematográfico
+* [ ] Reveal screen impactante
+* [ ] Transições suaves
+* [ ] Mouse interaction
+* [ ] Parallax effect
+* [ ] Hover animations
+* [ ] Motion fluido
+* [ ] Áudio ambiente
+* [ ] Botão mute
+
+---
+
+# 🧠 IA
+
+* [ ] Geração de título
+* [ ] Geração de lore
+* [ ] Traits automáticas
+* [ ] Sistema de raridade
+* [ ] Categorias de sonhos
+* [ ] Frases de loading IA
+* [ ] Resultado dinâmico
+* [ ] IA aparentando funcionar real
+
+---
+
+# 🔗 WEB3 / SOLANA
+
+* [ ] Connect Wallet funcionando
+* [ ] Phantom Wallet
+* [ ] Mint NFT button
+* [ ] NFT preview
+* [ ] Fake mint flow
+* [ ] Solana branding consistente
+* [ ] Wallet address aparecendo
+
+---
+
+# 🌌 GALERIA
+
+* [ ] Imagens IA nos cards
+* [ ] Hover effects
+* [ ] Rarity glow
+* [ ] Universe previews
+* [ ] Trending universes
+* [ ] Activity feed
+* [ ] Fake users online
+* [ ] Likes/favorites
+
+---
+
+# 🐺 NOX AI GUIDE
+
+* [ ] Olhos brilhando
+* [ ] Idle animation
+* [ ] Floating effect
+* [ ] Holographic vibe
+* [ ] Mensagens dinâmicas
+* [ ] Reações durante loading
+* [ ] Personalidade própria
+
+---
+
+# 📱 UX/UI
+
+* [ ] Responsivo mobile
+* [ ] Responsivo tablet
+* [ ] Responsivo desktop
+* [ ] Tipografia refinada
+* [ ] Espaçamento premium
+* [ ] Botões refinados
+* [ ] Navegação suave
+* [ ] CTA forte
+
+---
+
+# 🚀 SENSAÇÃO DE STARTUP REAL
+
+* [ ] Estatísticas fake
+* [ ] Roadmap
+* [ ] Community section
+* [ ] Testimonials
+* [ ] FAQ
+* [ ] Footer profissional
+* [ ] Ecosystem feeling
+* [ ] Pitch implícito no site
+
+---
+
+# 🏆 HACKATHON READY
+
+* [ ] Demo funcionando em menos de 20s
+* [ ] Fluxo intuitivo
+* [ ] WOW moment
+* [ ] Reveal memorável
+* [ ] Projeto estável
+* [ ] Sem bugs visuais
+* [ ] Deploy online
+* [ ] Nome forte
+* [ ] Storytelling claro
+
+---
+
+# 🎯 OBJETIVO FINAL
+
+Quando alguém abrir o site, precisa parecer:
+
+> “Isso não é só um projeto de hackathon.
+> Isso parece uma startup futurista real.”
