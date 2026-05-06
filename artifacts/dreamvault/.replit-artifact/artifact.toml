@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "DreamVault"
+version = "1.0.0"
+id = "artifacts/dreamvault"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18876
+
+[services.development]
+run = "pnpm --filter @workspace/dreamvault run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/dreamvault", "run", "build" ]
+publicDir = "artifacts/dreamvault/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18876"
+BASE_PATH = "/"
