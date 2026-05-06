@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Wallet } from 'lucide-react';
+import { Wallet, LogIn, UserPlus } from 'lucide-react';
 import { Button } from './ui/button';
+import { Link } from 'wouter';
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -43,10 +44,29 @@ export function Navbar() {
           ))}
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <Link href="/login">
+            <Button
+              variant="ghost"
+              className="hidden sm:flex text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-300 font-mono text-sm"
+              data-testid="button-nav-login"
+            >
+              <LogIn className="w-4 h-4 mr-2" />
+              Sign In
+            </Button>
+          </Link>
+          <Link href="/signup">
+            <Button
+              className="hidden sm:flex bg-primary/20 border border-primary/40 hover:bg-primary/30 hover:border-primary/70 text-primary hover:shadow-[0_0_15px_rgba(140,80,255,0.3)] transition-all duration-300 font-orbitron text-xs tracking-wide"
+              data-testid="button-nav-signup"
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Get Started
+            </Button>
+          </Link>
           <Button
             variant="outline"
-            className="hidden sm:flex border-primary/30 hover:border-primary hover:bg-primary/10 text-primary transition-all duration-300"
+            className="hidden lg:flex border-primary/30 hover:border-primary hover:bg-primary/10 text-primary transition-all duration-300"
             data-testid="button-connect-wallet"
           >
             <Wallet className="w-4 h-4 mr-2" />
