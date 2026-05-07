@@ -1,3 +1,59 @@
+const traitLabels = ["Luminosity", "Entropy", "Consciousness", "Dimension Class", "Reality Anchor", "Temporal Flux", "Neural Resonance", "Void Density", "Ethereal Index"];
+const traitDescriptors = {
+  numeric: ["9.2%", "45.8%", "73.1%", "12.4%", "99.7%", "61.3%", "88.5%", "27.6%"],
+  text: ["Transcendent", "Fractured", "Resonant", "Omniscient", "Fluid", "Crystalline", "Primordial", "Liminal", "Quantum", "Holistic"],
+};
+
+const loreFragments = {
+  prefix: [
+    "Within the depths of", "At the threshold of", "Beyond the veil of", "Suspended within",
+    "Orbiting through", "Crystallized within", "Emerging from", "Lost in the"
+  ],
+  subject: [
+    "a forgotten realm", "a dying star", "a liquid dimension", "an impossible architecture",
+    "an ancient memory", "a neural void", "a cosmic labyrinth", "a subconscious frontier"
+  ],
+  effect: [
+    "time flows backward in streams of light",
+    "consciousness becomes visible as color",
+    "reality bends to thought alone",
+    "echoes carry the weight of eons",
+    "dreams and memory are indistinguishable",
+    "entities speak only in frequencies beyond hearing",
+    "space folds infinitely inward"
+  ]
+};
+
+function generateLore(dreamText: string, category: string): string {
+  const getRandomFromArray = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+  const seed = dreamText.length + category.length;
+  
+  // Use seed to pick consistent but varied fragments
+  const idx1 = seed % loreFragments.prefix.length;
+  const idx2 = (seed + 13) % loreFragments.subject.length;
+  const idx3 = (seed + 29) % loreFragments.effect.length;
+  
+  return `${loreFragments.prefix[idx1]} ${loreFragments.subject[idx2]}, where ${loreFragments.effect[idx3]}. This universe remembers what others forget.`;
+}
+
+function generateTraits(dreamText: string, category: string): Array<{ label: string; value: string }> {
+  const seed = dreamText.length * category.length;
+  const traits = [];
+  
+  for (let i = 0; i < 6; i++) {
+    const isNumeric = (seed + i) % 2 === 0;
+    const labelIdx = (seed + i) % traitLabels.length;
+    const valueIdx = (seed + i * 7) % (isNumeric ? traitDescriptors.numeric.length : traitDescriptors.text.length);
+    
+    traits.push({
+      label: traitLabels[labelIdx],
+      value: isNumeric ? traitDescriptors.numeric[valueIdx] : traitDescriptors.text[valueIdx],
+    });
+  }
+  
+  return traits;
+}
+
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, RefreshCw, Sparkles, Check, ExternalLink } from 'lucide-react';
 import { Button } from './ui/button';
@@ -113,8 +169,8 @@ export function DreamResult({ onReset, dreamText = "", category = "" }: DreamRes
   const generated = {
     title: generateNameFromText(dreamText) || base.title,
     category: category || base.category,
-    lore: base.lore,
-    traits: base.traits,
+    lore: generateLore(dreamText, category),
+    traits: generateTraits(dreamText, category),
     artwork: base.artwork,
     artworkAccent: base.artworkAccent,
   };

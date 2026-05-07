@@ -25,9 +25,19 @@ export function NoxAssistant({ isGenerating = false }: { isGenerating?: boolean 
   const [textIndex, setTextIndex] = useState(0);
   const [messageIndex, setMessageIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
+  const [eyeBlink, setEyeBlink] = useState(false);
 
   const messages = isGenerating ? generatingMessages : idleMessages;
   const currentMessage = messages[messageIndex % messages.length];
+
+  // Eye blink effect
+  useEffect(() => {
+    const blinkInterval = setInterval(() => {
+      setEyeBlink(true);
+      setTimeout(() => setEyeBlink(false), 150);
+    }, 4000 + Math.random() * 3000);
+    return () => clearInterval(blinkInterval);
+  }, []);
 
   const startTyping = useCallback(() => {
     setTextIndex(0);
@@ -122,7 +132,40 @@ export function NoxAssistant({ isGenerating = false }: { isGenerating?: boolean 
         >
           <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-transparent to-transparent mix-blend-overlay z-10" />
           <div className="absolute inset-0 bg-indigo-500/10 mix-blend-screen z-10" />
-          <img src={wolfImage} alt="NOX" className="w-full h-full object-cover scale-110" />
+          <img src={wolfImage} alt="NOX" className="w-full h-full object-cover scale-110 transition-all" style={{ opacity: eyeBlink ? 0.3 : 1 }} />
+          {/* Eyes glow overlay */}
+          <div className="absolute inset-0 flex items-center justify-between px-3 z-20">
+            <motion.div
+              animate={{
+                boxShadow: isGenerating ? [
+                  '0 0 8px #00d4ff, inset 0 0 4px #06b6d4',
+                  '0 0 16px #00d4ff, inset 0 0 6px #06b6d4',
+                  '0 0 8px #00d4ff, inset 0 0 4px #06b6d4'
+                ] : [
+                  '0 0 6px #7c3aed, inset 0 0 2px #a78bfa',
+                  '0 0 12px #7c3aed, inset 0 0 4px #a78bfa',
+                  '0 0 6px #7c3aed, inset 0 0 2px #a78bfa'
+                ]
+              }}
+              transition={{ duration: isGenerating ? 0.8 : 2, repeat: Infinity }}
+              className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-primary to-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity"
+            />
+            <motion.div
+              animate={{
+                boxShadow: isGenerating ? [
+                  '0 0 8px #00d4ff, inset 0 0 4px #06b6d4',
+                  '0 0 16px #00d4ff, inset 0 0 6px #06b6d4',
+                  '0 0 8px #00d4ff, inset 0 0 4px #06b6d4'
+                ] : [
+                  '0 0 6px #7c3aed, inset 0 0 2px #a78bfa',
+                  '0 0 12px #7c3aed, inset 0 0 4px #a78bfa',
+                  '0 0 6px #7c3aed, inset 0 0 2px #a78bfa'
+                ]
+              }}
+              transition={{ duration: isGenerating ? 0.8 : 2, repeat: Infinity }}
+              className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-primary to-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity"
+            />
+          </div>
           <div className="absolute inset-0 rounded-full ring-2 ring-primary/40 z-20" />
         </motion.div>
         {isGenerating && (

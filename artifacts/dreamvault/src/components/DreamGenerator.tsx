@@ -6,10 +6,11 @@ import { Button } from './ui/button';
 const categories = ["Fantasy", "Sci-Fi", "Horror", "Abstract", "Mythological", "Cosmic"];
 
 const loadingPhases = [
-  { message: "Scanning subconscious patterns...", progress: 10 },
-  { message: "Interpreting dream fragments...", progress: 35 },
-  { message: "Building subconscious topology...", progress: 60 },
-  { message: "Synchronizing neural architecture...", progress: 85 },
+  { message: "Scanning subconscious patterns...", progress: 8 },
+  { message: "Interpreting dream fragments...", progress: 28 },
+  { message: "Mapping neural topology...", progress: 52 },
+  { message: "Synchronizing consciousness matrix...", progress: 76 },
+  { message: "Crystallizing dreamscape...", progress: 92 },
   { message: "Universe stabilized.", progress: 100 },
 ];
 
