@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { Heart, Eye, TrendingUp, Zap } from 'lucide-react';
 import { Button } from './ui/button';
+import HoverParallax from './HoverParallax';
 
 const galleryItems = [
   { title: "Neon Labyrinth of Echoes", creator: "0x1A2b...F9c3", rarity: "LEGENDARY", rarityColor: "text-amber-400", borderColor: "border-amber-400/40", glowColor: "rgba(245,158,11,0.25)", price: "2.4 SOL", bg: "from-fuchsia-900 via-purple-950 to-black", likes: 847, views: 12400 },
@@ -85,13 +86,14 @@ export function GallerySection() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {galleryItems.map((item, i) => (
-            <motion.div
+            <HoverParallax key={i}>
+              <motion.div
               key={i}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ delay: i * 0.08 }}
-              className={`glass rounded-2xl border ${item.borderColor} overflow-hidden group hover:-translate-y-2 transition-all duration-500`}
+              className={`glass rounded-2xl border ${item.borderColor} overflow-hidden group transition-all duration-500`}
               style={{ boxShadow: `0 0 0 rgba(0,0,0,0)` }}
               whileHover={{ boxShadow: `0 8px 40px ${item.glowColor}` }}
             >
@@ -138,7 +140,8 @@ export function GallerySection() {
                   {item.likes + (likedItems.has(i) ? 1 : 0)} likes
                 </p>
               </div>
-            </motion.div>
+              </motion.div>
+            </HoverParallax>
           ))}
         </div>
       </div>

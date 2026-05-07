@@ -10,6 +10,7 @@ import { FeaturesSection } from '@/components/FeaturesSection';
 import { HowItWorksSection } from '@/components/HowItWorksSection';
 import { AIPipelineSection } from '@/components/AIPipelineSection';
 import { GallerySection } from '@/components/GallerySection';
+import RoadmapSection from '@/components/RoadmapSection';
 import { TestimonialsSection } from '@/components/TestimonialsSection';
 import { FAQSection } from '@/components/FAQSection';
 import { Footer } from '@/components/Footer';
@@ -76,6 +77,7 @@ export default function Home() {
         <HowItWorksSection />
         <AIPipelineSection />
         <GallerySection />
+        <RoadmapSection />
         <TestimonialsSection />
         <FAQSection />
       </main>
