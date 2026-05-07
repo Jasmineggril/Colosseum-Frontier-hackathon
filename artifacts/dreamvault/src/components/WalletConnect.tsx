@@ -3,15 +3,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Wallet, Copy, LogOut } from 'lucide-react';
 import { Button } from './ui/button';
 
-export function WalletConnect() {
+export default function WalletConnect() {
   const [connected, setConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const handleConnect = () => {
-    // Fake Phantom wallet connection
-    const fakeAddress = `0x${Array.from({ length: 40 }).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`;
+    const fakeAddress = `0x${Array.from({ length: 40 })
+      .map(() => Math.floor(Math.random() * 16).toString(16))
+      .join('')}`;
     setWalletAddress(fakeAddress);
     setConnected(true);
     setShowDropdown(false);
@@ -24,7 +25,7 @@ export function WalletConnect() {
   };
 
   const copyAddress = () => {
-    navigator.clipboard.writeText(walletAddress);
+    navigator.clipboard.writeText(walletAddress).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

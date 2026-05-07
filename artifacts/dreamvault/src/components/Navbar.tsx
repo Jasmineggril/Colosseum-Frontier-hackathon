@@ -1,3 +1,5 @@
+import WalletConnect from './WalletConnect';
+import ActivityFeed from './ActivityFeed';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Wallet, LogIn, UserPlus, Check, Copy } from 'lucide-react';
@@ -51,7 +53,6 @@ export function Navbar() {
             <span className="text-muted-foreground">VAULT</span>
           </span>
         </Link>
-
         <div className="hidden md:flex items-center gap-8">
           {[
             { label: 'Features', href: '#features' },
@@ -69,8 +70,9 @@ export function Navbar() {
             </a>
           ))}
         </div>
-
         <div className="flex items-center gap-3">
+          <ActivityFeed />
+          <WalletConnect />
           <Link href="/login">
             <Button
               variant="ghost"
@@ -81,7 +83,6 @@ export function Navbar() {
               Sign In
             </Button>
           </Link>
-
           <Link href="/signup">
             <Button
               className="hidden sm:flex bg-primary/15 border border-primary/40 hover:bg-primary/25 hover:border-primary/70 text-primary transition-all duration-300 font-orbitron text-xs tracking-wide"
@@ -91,7 +92,6 @@ export function Navbar() {
               Get Started
             </Button>
           </Link>
-
           <AnimatePresence mode="wait">
             {!walletConnected ? (
               <motion.div key="connect" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
