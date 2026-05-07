@@ -173,7 +173,7 @@ export function DreamGenerator({ onGenerateStart, onGenerateComplete }: DreamGen
                       style={{ background: 'linear-gradient(90deg, #7c3aed, #3b82f6)' }}
                       initial={{ width: '0%' }}
                       animate={{ width: `${phase.progress}%` }}
-                      transition={{ duration: 0.8, ease: 'easeOut' }}
+                      transition={{ duration: 0.8, ease: [0, 0, 0.2, 1] as any }}
                     />
                   </div>
                   <p className="text-xs font-mono text-muted-foreground/50">{phase.progress}% complete</p>

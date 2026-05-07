@@ -112,13 +112,13 @@ export function NoxAssistant({ isGenerating = false }: { isGenerating?: boolean 
               ? ['0 0 20px rgba(140,80,255,0.5)', '0 0 50px rgba(140,80,255,0.8)', '0 0 20px rgba(140,80,255,0.5)']
               : ['0 0 15px rgba(140,80,255,0.3)', '0 0 30px rgba(140,80,255,0.5)', '0 0 15px rgba(140,80,255,0.3)'],
           }}
-          transition={{ duration: isGenerating ? 1 : 2.5, repeat: Infinity, ease: 'easeInOut' }}
+          transition={{ duration: isGenerating ? 1 : 2.5, repeat: Infinity, ease: [0.42, 0, 0.58, 1] as any }}
         />
         <div className="absolute -inset-2 bg-primary/10 rounded-full blur-xl group-hover:bg-primary/20 transition-colors duration-500" />
         <motion.div
           className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-primary/60"
           animate={{ y: [0, -6, 0] }}
-          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+          transition={{ duration: 3, repeat: Infinity, ease: [0.42, 0, 0.58, 1] as any }}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-transparent to-transparent mix-blend-overlay z-10" />
           <div className="absolute inset-0 bg-indigo-500/10 mix-blend-screen z-10" />
@@ -129,7 +129,7 @@ export function NoxAssistant({ isGenerating = false }: { isGenerating?: boolean 
           <motion.div
             className="absolute -inset-1 rounded-full border-2 border-primary/60"
             animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+            transition={{ duration: 2, repeat: Infinity, ease: [0, 0, 1, 1] as any }}
             style={{ borderTopColor: 'transparent', borderLeftColor: 'transparent' }}
           />
         )}

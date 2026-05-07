@@ -30,7 +30,11 @@ export function HeroSection() {
   };
   const itemVariants = {
     hidden: { y: 30, opacity: 0 },
-    visible: { y: 0, opacity: 1, transition: { duration: 0.9, ease: 'easeOut' } },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.9, ease: [0.25, 0.46, 0.45, 0.94] as any },
+    },
   };
 
   return (
@@ -113,7 +117,7 @@ export function HeroSection() {
           variants={itemVariants}
           className="mt-10 flex flex-col items-center gap-2"
           animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: [0.42, 0, 0.58, 1] as any }}
         >
           <span className="text-xs font-mono text-muted-foreground/50 tracking-widest uppercase">Scroll</span>
           <div className="w-px h-8 bg-gradient-to-b from-primary/40 to-transparent" />
