@@ -6,11 +6,10 @@ import { Button } from './ui/button';
 const categories = ["Fantasy", "Sci-Fi", "Horror", "Abstract", "Mythological", "Cosmic"];
 
 const loadingPhases = [
-  { message: "Interpreting subconscious signals...", progress: 15 },
-  { message: "Mapping dream fragments...", progress: 32 },
-  { message: "Calibrating neural pathways...", progress: 51 },
-  { message: "Generating universe matrix...", progress: 73 },
-  { message: "Crystallizing dreamscape...", progress: 90 },
+  { message: "Scanning subconscious patterns...", progress: 10 },
+  { message: "Interpreting dream fragments...", progress: 35 },
+  { message: "Building subconscious topology...", progress: 60 },
+  { message: "Synchronizing neural architecture...", progress: 85 },
   { message: "Universe stabilized.", progress: 100 },
 ];
 
@@ -43,7 +42,7 @@ export function DreamGenerator({ onGenerateStart, onGenerateComplete }: DreamGen
         }, 800);
       }
     };
-    const t = setTimeout(advance, 1300);
+    const t = setTimeout(advance, 900);
     return () => clearTimeout(t);
   }, [isGenerating, onGenerateComplete]);
 
@@ -150,7 +149,7 @@ export function DreamGenerator({ onGenerateStart, onGenerateComplete }: DreamGen
                   <div className="absolute -inset-5 rounded-full border border-secondary/20 border-b-secondary animate-[spin_3s_linear_infinite_reverse]" />
                   <div className="absolute -inset-10 rounded-full border border-primary/10 animate-[spin_6s_linear_infinite]" />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-4 h-4 rounded-full bg-primary/80 blur-sm animate-pulse-glow" />
+                    <img src="/assets/universes/loading.svg" alt="loading" className="w-12 h-12 opacity-90" />
                   </div>
                 </div>
 

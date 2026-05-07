@@ -1,0 +1,10 @@
+filename,aspect,prompt,platform,notes
+gallery-01.jpg,1:1,"floating planets, giant moons, space city, swirling nebulae, ancient portal; cinematic surreal dream universe, neon cosmic architecture, volumetric lighting, ultra detailed, purple and blue neon, sci-fi dreamscape, ethereal, cinematic composition",midjourney,--ar 1:1 --q 2 --stylize 1000
+gallery-02.jpg,1:1,"infinite corridors, impossible stairs, surreal temple, alien architecture, liminal rooms; cinematic surreal dream universe, ultra detailed, volumetric lighting, purple and blue neon",midjourney,--ar 1:1 --q 2 --stylize 1000
+gallery-03.jpg,1:1,"neon rain, holograms, towering absurd buildings, Blade Runner vibe, reflective puddles; cinematic surreal dream universe, ultra detailed, volumetric lighting, purple and blue neon",midjourney,--ar 1:1 --q 2 --stylize 1000
+gallery-04.jpg,1:1,"glowing trees, giant mushrooms, spirit animals, cosmic rivers, bioluminescent flora; cinematic surreal dream universe, ultra detailed, volumetric lighting, purple and blue neon",midjourney,--ar 1:1 --q 2 --stylize 1000
+gallery-05.jpg,1:1,"holographic wolf, spiritual entity, digital guardian, glowing eyes, translucent fur; cinematic surreal dream universe, ultra detailed, volumetric lighting, purple and blue neon",midjourney,--ar 1:1 --q 2 --stylize 1000
+gallery-06.jpg,1:1,"temple orbiting a dying star, cathedral of light, ancient reliquary among nebulae; cinematic surreal dream universe, ultra detailed, volumetric lighting, purple and blue neon",midjourney,--ar 1:1 --q 2 --stylize 1000
+reveal.jpg,16:9,"cinematic surreal dream universe, neon cosmic architecture, floating cathedral inside a dying star, volumetric lighting, ultra detailed, purple and blue neon, epic composition",midjourney,--ar 16:9 --q 2 --stylize 1000
+loading.png,1:1,"abstract neural loading sigil, glowing rings, particle core, cinematic, purple and blue neon, simple composition",leonardo,--size 1024
+hero-bg.jpg,21:9,"subconscious horizon, soft nebula gradients, subtle stars, cinematic, purple-blue gradient, low detail background",playgroundai,--width 3840 --height 1600

@@ -5,6 +5,7 @@ import { HeroSection } from '@/components/HeroSection';
 import { NoxAssistant } from '@/components/NoxAssistant';
 import { DreamGenerator } from '@/components/DreamGenerator';
 import { DreamResult } from '@/components/DreamResult';
+import RevealModal from '@/components/RevealModal';
 import { FeaturesSection } from '@/components/FeaturesSection';
 import { HowItWorksSection } from '@/components/HowItWorksSection';
 import { AIPipelineSection } from '@/components/AIPipelineSection';
@@ -18,6 +19,7 @@ export default function Home() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [dreamText, setDreamText] = useState('');
   const [category, setCategory] = useState('');
+  const [showReveal, setShowReveal] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.add('dark');
@@ -42,11 +44,24 @@ export default function Home() {
           }}
           onGenerateComplete={() => {
             setIsGenerating(false);
+            // open cinematic reveal first
+            setShowReveal(true);
+          }}
+        />
+
+        <RevealModal
+          open={showReveal}
+          onComplete={() => {
+            setShowReveal(false);
             setDreamGenerated(true);
             setTimeout(() => {
               window.scrollBy({ top: 500, behavior: 'smooth' });
             }, 150);
           }}
+          title={''}
+          imageSrc={'/assets/universes/reveal.svg'}
+          lore={''}
+          rarity={'LEGENDARY'}
         />
 
         {dreamGenerated && (

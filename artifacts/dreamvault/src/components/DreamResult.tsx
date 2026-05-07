@@ -93,7 +93,33 @@ export function DreamResult({ onReset, dreamText = "", category = "" }: DreamRes
   const [txHash] = useState(`${Math.random().toString(36).slice(2, 6)}...${Math.random().toString(36).slice(2, 6)}`);
 
   const seed = (dreamText.length + category.length) % dreamData.length;
-  const dream = dreamData[seed];
+  const base = dreamData[seed];
+
+  const generateNameFromText = (text: string) => {
+    if (!text) return base.title;
+    const words = text.replace(/[^a-zA-Z0-9 ]/g, '').split(/\s+/).filter(Boolean);
+    const pick = words.slice(0, 3).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    return pick ? `${pick} of the Dream` : base.title;
+  };
+
+  const rarityFromSeed = (s: number) => {
+    const n = (s * 13) % 100;
+    if (n > 95) return { rarity: 'LEGENDARY', color: 'text-amber-400', glow: 'rgba(245,158,11,0.4)' };
+    if (n > 80) return { rarity: 'EPIC', color: 'text-purple-400', glow: 'rgba(168,85,247,0.3)' };
+    if (n > 55) return { rarity: 'RARE', color: 'text-blue-400', glow: 'rgba(96,165,250,0.18)' };
+    return { rarity: 'COMMON', color: 'text-white/60', glow: 'rgba(255,255,255,0.06)' };
+  };
+
+  const generated = {
+    title: generateNameFromText(dreamText) || base.title,
+    category: category || base.category,
+    lore: base.lore,
+    traits: base.traits,
+    artwork: base.artwork,
+    artworkAccent: base.artworkAccent,
+  };
+  const rarityInfo = rarityFromSeed(seed + (dreamText.length % 7));
+  const dream = { ...generated, rarity: rarityInfo.rarity, rarityColor: rarityInfo.color, rarityGlow: rarityInfo.glow, topPercent: base.topPercent };
 
   const handleMint = () => {
     setMintState('minting');
