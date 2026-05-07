@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useLocation } from "wouter";
 import { Eye, EyeOff, Wallet, Mail, Lock, ArrowRight, Zap } from "lucide-react";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 
 const wolfImage = `/nox-wolf.jpeg`;
 
@@ -12,14 +13,35 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [walletConnecting, setWalletConnecting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage("");
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+
+    try {
+      if (!isSupabaseConfigured || !supabase) {
+        setErrorMessage("Supabase nao configurado. Defina VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.");
+        return;
+      }
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        setErrorMessage("Falha ao entrar. Verifique suas credenciais.");
+        return;
+      }
+
       setLocation("/");
-    }, 2000);
+    } catch {
+      setErrorMessage("Nao foi possivel conectar com o Supabase.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleWallet = () => {
@@ -203,6 +225,12 @@ export default function Login() {
                 )}
               </span>
             </motion.button>
+
+            {errorMessage ? (
+              <p className="text-xs font-mono text-red-400" data-testid="login-error-message">
+                {errorMessage}
+              </p>
+            ) : null}
           </form>
 
           <p className="text-center text-sm text-muted-foreground mt-6 font-mono">

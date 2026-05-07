@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useLocation } from "wouter";
 import { Eye, EyeOff, Wallet, Mail, Lock, User, ArrowRight, Zap, Check } from "lucide-react";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 
 const wolfImage = `/nox-wolf.jpeg`;
 
@@ -15,6 +16,7 @@ export default function Signup() {
   const [isLoading, setIsLoading] = useState(false);
   const [walletConnecting, setWalletConnecting] = useState(false);
   const [complete, setComplete] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const [form, setForm] = useState({
     username: "",
@@ -30,17 +32,68 @@ export default function Signup() {
   const update = (key: string, val: string) => setForm((f) => ({ ...f, [key]: val }));
 
   const handleNext = () => {
-    if (step < 2) setStep(step + 1);
-    else handleSubmit();
+    setErrorMessage("");
+
+    if (step === 0) {
+      if (!form.username.trim() || !form.email.trim()) {
+        setErrorMessage("Preencha nome e email para continuar.");
+        return;
+      }
+    }
+
+    if (step === 1) {
+      if (form.password.length < 8) {
+        setErrorMessage("A senha precisa ter pelo menos 8 caracteres.");
+        return;
+      }
+
+      if (form.password !== form.confirm) {
+        setErrorMessage("As senhas precisam ser iguais.");
+        return;
+      }
+    }
+
+    if (step < 2) {
+      setStep(step + 1);
+      return;
+    }
+
+    void handleSubmit();
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setIsLoading(true);
-    setTimeout(() => {
+
+    try {
+      if (!isSupabaseConfigured || !supabase) {
+        setErrorMessage("Supabase nao configurado. Defina VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.");
+        return;
+      }
+
+      const { error } = await supabase.auth.signUp({
+        email: form.email,
+        password: form.password,
+        options: {
+          data: {
+            username: form.username,
+            dreamer_id: form.dreamerId,
+            category: form.category,
+          },
+        },
+      });
+
+      if (error) {
+        setErrorMessage("Falha ao criar conta.");
+        return;
+      }
+
       setIsLoading(false);
       setComplete(true);
       setTimeout(() => setLocation("/"), 2500);
-    }, 2500);
+    } catch {
+      setErrorMessage("Nao foi possivel conectar com o Supabase.");
+      setIsLoading(false);
+    }
   };
 
   const handleWallet = () => {
@@ -378,6 +431,12 @@ export default function Signup() {
                   </span>
                 </motion.button>
               </div>
+
+              {errorMessage ? (
+                <p className="text-xs font-mono text-red-400 mt-3" data-testid="signup-error-message">
+                  {errorMessage}
+                </p>
+              ) : null}
 
               <p className="text-center text-sm text-muted-foreground mt-5 font-mono">
                 Already in the vault?{" "}
