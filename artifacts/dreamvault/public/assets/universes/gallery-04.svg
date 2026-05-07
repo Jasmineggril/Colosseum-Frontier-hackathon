@@ -1,6 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <rect width="100%" height="100%" fill="#02140a" />
-  <defs><linearGradient id="g4" x1="0" x2="1"><stop offset="0%" stop-color="#22c55e"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient></defs>
-  <circle cx="280" cy="300" r="260" fill="url(#g4)" opacity="0.08" />
-  <text x="50%" y="92%" font-family="Orbitron, sans-serif" font-size="26" fill="#fff" text-anchor="middle">Dream Forest</text>
+  <defs>
+    <radialGradient id="forest-grad" cx="50%" cy="50%"><stop offset="0%" stop-color="#1a3a1a"/><stop offset="100%" stop-color="#0f1710"/></radialGradient>
+    <linearGradient id="glow-tree" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#4ade80"/><stop offset="100%" stop-color="#22c55e"/></linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#forest-grad)"/>
+  <!-- Glowing trees -->
+  <polygon points="200,900 180,400 220,400" fill="url(#glow-tree)" opacity="0.7"/>
+  <circle cx="200" cy="350" r="120" fill="#4ade80" opacity="0.5"/>
+  <polygon points="500,900 450,300 550,300" fill="#22c55e" opacity="0.6"/>
+  <circle cx="500" cy="240" r="140" fill="#10b981" opacity="0.4"/>
+  <polygon points="800,900 750,450 850,450" fill="#4ade80" opacity="0.55"/>
+  <circle cx="800" cy="380" r="110" fill="#059669" opacity="0.45"/>
+  <!-- Bioluminescent elements -->
+  <circle cx="300" cy="650" r="80" fill="#84cc16" opacity="0.08"/>
+  <circle cx="650" cy="700" r="100" fill="#86efac" opacity="0.07"/>
+  <circle cx="150" cy="500" r="60" fill="#4ade80" opacity="0.06"/>
+  <circle cx="900" cy="550" r="75" fill="#22c55e" opacity="0.05"/>
+  <!-- Cosmic river -->
+  <path d="M 100 800 Q 300 700 450 750 T 800 800 T 1024 850" stroke="#06b6d4" stroke-width="12" fill="none" opacity="0.12"/>
+  <text x="50%" y="95%" font-family="Orbitron, monospace" font-size="28" fill="#fff" text-anchor="middle" font-weight="bold" opacity="0.9">Dream Forest</text>
 </svg>

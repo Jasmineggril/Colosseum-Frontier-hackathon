@@ -1,6 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <rect width="100%" height="100%" fill="#02010a" />
-  <defs><linearGradient id="g2" x1="0" x2="1"><stop offset="0%" stop-color="#0ea5e9"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient></defs>
-  <rect x="120" y="160" width="760" height="600" rx="36" fill="url(#g2)" opacity="0.12" />
-  <text x="50%" y="92%" font-family="Orbitron, sans-serif" font-size="26" fill="#fff" text-anchor="middle">Infinite Corridors</text>
+  <defs>
+    <linearGradient id="corridor" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#1e3a8a"/><stop offset="100%" stop-color="#0f172a"/></linearGradient>
+    <linearGradient id="wall-glow" x1="0" x2="1"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#06b6d4"/></linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#corridor)"/>
+  <polygon points="512,100 900,400 900,900 100,900 100,400" fill="url(#corridor)" opacity="0.8"/>
+  <line x1="300" y1="150" x2="512" y2="800" stroke="#7c3aed" stroke-width="8" opacity="0.4"/>
+  <line x1="700" y1="150" x2="512" y2="800" stroke="#7c3aed" stroke-width="8" opacity="0.4"/>
+  <line x1="100" y1="400" x2="512" y2="800" stroke="#06b6d4" stroke-width="6" opacity="0.3"/>
+  <line x1="900" y1="400" x2="512" y2="800" stroke="#06b6d4" stroke-width="6" opacity="0.3"/>
+  <rect x="200" y="250" width="150" height="200" fill="#7c3aed" opacity="0.08"/>
+  <rect x="650" y="250" width="150" height="200" fill="#3b82f6" opacity="0.08"/>
+  <rect x="350" y="400" width="120" height="150" fill="#06b6d4" opacity="0.06"/>
+  <rect x="550" y="400" width="120" height="150" fill="#06b6d4" opacity="0.06"/>
+  <text x="50%" y="95%" font-family="Orbitron, monospace" font-size="28" fill="#fff" text-anchor="middle" font-weight="bold" opacity="0.9">Infinite Corridors</text>
 </svg>

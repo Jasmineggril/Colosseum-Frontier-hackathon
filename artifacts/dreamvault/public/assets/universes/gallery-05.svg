@@ -1,6 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <rect width="100%" height="100%" fill="#030014" />
-  <defs><linearGradient id="g5" x1="0" x2="1"><stop offset="0%" stop-color="#06b6d4"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient></defs>
-  <g fill="url(#g5)"><path d="M200 800 C300 200, 724 200, 824 800 L200 800 Z" opacity="0.12" /></g>
-  <text x="50%" y="92%" font-family="Orbitron, sans-serif" font-size="26" fill="#fff" text-anchor="middle">NOX Guardian</text>
+  <defs>
+    <radialGradient id="wolf-glow" cx="40%" cy="40%"><stop offset="0%" stop-color="#06b6d4"/><stop offset="100%" stop-color="#0284c7"/></radialGradient>
+    <filter id="wolf-blur"><feGaussianBlur stdDeviation="6"/></filter>
+  </defs>
+  <rect width="100%" height="100%" fill="#0a0014"/>
+  <!-- Holographic aura -->
+  <circle cx="512" cy="420" r="320" fill="url(#wolf-glow)" opacity="0.06" filter="url(#wolf-blur)"/>
+  <circle cx="512" cy="420" r="280" fill="#06b6d4" opacity="0.03" filter="url(#wolf-blur)"/>
+  <!-- Wolf silhouette (simplified geometric) -->
+  <ellipse cx="512" cy="500" rx="180" ry="150" fill="#06b6d4" opacity="0.15"/>
+  <!-- Head -->
+  <ellipse cx="512" cy="320" rx="120" ry="140" fill="#06b6d4" opacity="0.18"/>
+  <!-- Eyes glowing -->
+  <circle cx="480" cy="300" r="25" fill="#00d4ff" opacity="0.9"/>
+  <circle cx="544" cy="300" r="25" fill="#00d4ff" opacity="0.9"/>
+  <circle cx="482" cy="298" r="12" fill="#fff" opacity="0.7"/>
+  <circle cx="546" cy="298" r="12" fill="#fff" opacity="0.7"/>
+  <!-- Snout -->
+  <ellipse cx="512" cy="380" rx="60" ry="50" fill="#06b6d4" opacity="0.12"/>
+  <!-- Ears -->
+  <polygon points="420,220 400,140 450,180" fill="#06b6d4" opacity="0.16"/>
+  <polygon points="604,220 624,140 574,180" fill="#06b6d4" opacity="0.16"/>
+  <!-- Energy trails -->
+  <path d="M 300 400 Q 350 380 400 400" stroke="#00d4ff" stroke-width="3" fill="none" opacity="0.4"/>
+  <path d="M 724 400 Q 674 380 624 400" stroke="#00d4ff" stroke-width="3" fill="none" opacity="0.4"/>
+  <text x="50%" y="95%" font-family="Orbitron, monospace" font-size="28" fill="#fff" text-anchor="middle" font-weight="bold" opacity="0.9">NOX Guardian</text>
 </svg>
