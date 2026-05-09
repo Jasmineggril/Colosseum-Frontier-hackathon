@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useLocation } from "wouter";
 import { Eye, EyeOff, Wallet, Mail, Lock, ArrowRight, Zap } from "lucide-react";
-import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import { isSupabaseConfigured, supabase, supabaseConfigError } from "@/lib/supabase";
 
 const wolfImage = `/nox-wolf.jpeg`;
 
@@ -22,7 +22,7 @@ export default function Login() {
 
     try {
       if (!isSupabaseConfigured || !supabase) {
-        setErrorMessage("Supabase nao configurado. Defina VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.");
+        setErrorMessage(supabaseConfigError ?? "Supabase nao configurado. Defina VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.");
         return;
       }
 

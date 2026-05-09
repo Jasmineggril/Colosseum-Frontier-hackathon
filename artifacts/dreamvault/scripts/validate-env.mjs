@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Validate required Supabase environment variables before building
- * Prevents deploying broken builds to production
+ * Validate Supabase environment variables before building.
+ * Missing values should not block deploys because the app degrades gracefully.
  */
 
 const requiredEnvVars = [
@@ -12,9 +12,10 @@ const requiredEnvVars = [
 const missing = requiredEnvVars.filter(key => !process.env[key]);
 
 if (missing.length > 0) {
-  console.error(
-    '\n❌ BUILD FAILED: Missing required environment variables\n' +
-    'The following variables must be set:\n' +
+  console.warn(
+    '\n⚠️  Supabase environment variables are missing.\n' +
+    'The app will build and run with auth features disabled.\n' +
+    'Missing variables:\n' +
     missing.map(v => `  - ${v}`).join('\n') +
     '\n\n📖 Setup instructions:\n' +
     '  Local: Copy .env.example to .env.local and fill in values\n' +
@@ -23,7 +24,6 @@ if (missing.length > 0) {
     '          Then trigger a redeploy\n' +
     '  Reference: .env.production.example\n'
   );
-  process.exit(1);
+} else {
+  console.log('✅ Environment variables validated successfully');
 }
-
-console.log('✅ Environment variables validated successfully');
