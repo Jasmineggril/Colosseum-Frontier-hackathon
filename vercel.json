@@ -1,5 +1,9 @@
 {
   "version": 2,
-  "builds": [],
-  "outputDirectory": "artifacts/dreamvault/dist/public"
+  "buildCommand": "pnpm run typecheck && pnpm -r --filter @workspace/dreamvault run build",
+  "outputDirectory": "artifacts/dreamvault/dist/public",
+  "env": {
+    "VITE_SUPABASE_URL": "@VITE_SUPABASE_URL",
+    "VITE_SUPABASE_ANON_KEY": "@VITE_SUPABASE_ANON_KEY"
+  }
 }

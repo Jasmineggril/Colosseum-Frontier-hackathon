@@ -49,8 +49,14 @@ Monorepo structure:
 
 3. Supabase
 - Frontend auth expects `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
-- Local setup template: `artifacts/dreamvault/.env.example`.
-- In Vercel, set the same variables in Production and Preview environments.
+- **Local setup**: Copy `artifacts/dreamvault/.env.example` to `.env.local` and fill in your values.
+- **Vercel production**: 
+  - Go to Vercel Project Settings > Environment Variables
+  - Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for **Production** environment
+  - (Optional) Also add for Preview if testing)
+  - **IMPORTANT: After adding variables, trigger a redeploy** (git push or manual redeploy from Vercel)
+  - See `artifacts/dreamvault/.env.production.example` for step-by-step instructions
+- Get API keys from Supabase Settings: https://app.supabase.com/project/YOUR_PROJECT_ID/settings/api
 
 ## Quick Verification
 
