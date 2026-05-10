@@ -4,7 +4,8 @@ const SUPABASE_ANON_KEY =
   process.env.VITE_SUPABASE_ANON_KEY ||
   process.env.SUPABASE_ANON_KEY ||
   process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-  process.env.SUPABASE_PUBLISHABLE_KEY;
+  process.env.SUPABASE_PUBLISHABLE_KEY ||
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJreHBjaWdyb2d5ZXpieHJrb2piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMDQ3NDQsImV4cCI6MjA5MzY4MDc0NH0.rr142If6C4EZtB5Qh1U18xNCkhVY5hBQjznYDDUa-VA";
 const SIGNUP_FLOW_VERSION = 3;
 
 function json(res, statusCode, payload) {
