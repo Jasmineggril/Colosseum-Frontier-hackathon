@@ -4,7 +4,7 @@
   "outputDirectory": "artifacts/dreamvault/dist/public",
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ]

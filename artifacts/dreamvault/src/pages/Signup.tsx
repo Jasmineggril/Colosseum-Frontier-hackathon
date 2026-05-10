@@ -3,10 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link, useLocation } from "wouter";
 import { Eye, EyeOff, Wallet, Mail, Lock, User, ArrowRight, Zap, Check } from "lucide-react";
 import { isSupabaseConfigured, supabase, supabaseConfigError } from "@/lib/supabase";
+import { formatAuthError, upsertDreamVaultProfile } from "@/lib/profile";
 
-const wolfImage = `/nox-wolf.jpeg`;
-
+const wolfImage = "/nox-wolf.jpeg";
 const steps = ["Identity", "Security", "Universe"];
+const categories = ["Cosmic", "Horror", "Fantasy", "Sci-Fi", "Abstract", "Mythological"];
 
 export default function Signup() {
   const [, setLocation] = useLocation();
@@ -16,29 +17,45 @@ export default function Signup() {
   const [isLoading, setIsLoading] = useState(false);
   const [walletConnecting, setWalletConnecting] = useState(false);
   const [complete, setComplete] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-
   const [form, setForm] = useState({
     username: "",
     email: "",
     password: "",
     confirm: "",
-    dreamerId: "",
     category: "",
   });
 
-  const categories = ["Cosmic", "Horror", "Fantasy", "Sci-Fi", "Abstract", "Mythological"];
+  const update = (key: keyof typeof form, value: string) => setForm((current) => ({ ...current, [key]: value }));
 
-  const update = (key: string, val: string) => setForm((f) => ({ ...f, [key]: val }));
+  const normalizeHandle = (value: string) => value.trim().replace(/^@+/, "");
+
+  const isValidUsername = (value: string) => /^[a-zA-Z0-9._-]{3,32}$/.test(normalizeHandle(value));
+
+  const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
   const handleNext = () => {
     setErrorMessage("");
 
     if (step === 0) {
       if (!form.username.trim() || !form.email.trim()) {
-        setErrorMessage("Preencha nome e email para continuar.");
+        setErrorMessage("Preencha username e email para continuar.");
         return;
       }
+
+      if (!isValidUsername(form.username)) {
+        setErrorMessage("Username deve ter 3 a 32 caracteres e usar apenas letras, numeros, ponto, underscore ou hifen.");
+        return;
+      }
+
+      if (!isValidEmail(form.email)) {
+        setErrorMessage("Digite um email valido.");
+        return;
+      }
+
+      setStep(step + 1);
+      return;
     }
 
     if (step === 1) {
@@ -53,6 +70,11 @@ export default function Signup() {
       }
     }
 
+    if (step === 2 && !form.category) {
+      setErrorMessage("Selecione uma categoria principal para continuar.");
+      return;
+    }
+
     if (step < 2) {
       setStep(step + 1);
       return;
@@ -63,6 +85,8 @@ export default function Signup() {
 
   const handleSubmit = async () => {
     setIsLoading(true);
+    setSuccessMessage("");
+    setErrorMessage("");
 
     try {
       if (!isSupabaseConfigured || !supabase) {
@@ -70,28 +94,131 @@ export default function Signup() {
         return;
       }
 
-      const { error } = await supabase.auth.signUp({
-        email: form.email,
+      const payload = {
+        username: normalizeHandle(form.username),
+        email: form.email.trim(),
         password: form.password,
-        options: {
-          data: {
-            username: form.username,
-            dreamer_id: form.dreamerId,
-            category: form.category,
+        category: form.category,
+      };
+
+      const createViaAdmin = async () => {
+        const response = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        },
+          body: JSON.stringify(payload),
+        });
+
+        const responseBody = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          const error = new Error(responseBody?.message || "Falha ao criar conta.") as Error & { status?: number };
+          error.status = response.status;
+          throw error;
+        }
+
+        return responseBody;
+      };
+
+      let createdUserId = "";
+
+      try {
+        const responseBody = await createViaAdmin();
+        createdUserId = String(responseBody?.user?.id ?? "");
+      } catch (error) {
+        const typedError = error as { message?: string; status?: number };
+        const message = formatAuthError(typedError, "Falha ao criar conta.");
+
+        if (message.includes("SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY")) {
+          setErrorMessage(message);
+          return;
+        }
+
+        if (message.includes("Falha ao criar usuario no Supabase Auth")) {
+          setErrorMessage(message);
+          return;
+        }
+
+        if (typedError.status === 404 || typedError.status === 405 || message.toLowerCase().includes("method not allowed") || message.toLowerCase().includes("not found")) {
+          const { data, error } = await supabase.auth.signUp({
+            email: form.email,
+            password: form.password,
+            options: {
+              emailRedirectTo: `${window.location.origin}/universe-awakening`,
+              data: {
+                username: normalizeHandle(form.username),
+                category: form.category,
+              },
+            },
+          });
+
+          if (error) {
+            setErrorMessage(formatAuthError(error, message));
+            return;
+          }
+
+          createdUserId = String(data.session?.user?.id ?? data.user?.id ?? "");
+        } else {
+          setErrorMessage(message);
+          return;
+        }
+      }
+
+      if (!createdUserId) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: form.email,
+          password: form.password,
+        });
+
+        if (error || !data.user) {
+          setErrorMessage(formatAuthError(error, "Conta criada, mas nao foi possivel iniciar a sessao automaticamente."));
+          return;
+        }
+
+        createdUserId = data.user.id;
+      }
+
+      const { error: profileError } = await upsertDreamVaultProfile({
+        id: createdUserId,
+        username: normalizeHandle(form.username),
+        category: form.category,
+        onboarding_completed: false,
       });
 
-      if (error) {
-        setErrorMessage("Falha ao criar conta.");
+      if (profileError) {
+        setErrorMessage(formatAuthError(profileError, "Conta criada, mas nao foi possivel salvar o perfil no banco."));
         return;
       }
 
-      setIsLoading(false);
+      const maxAttempts = 4;
+      let signedIn = false;
+
+      for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: form.email,
+          password: form.password,
+        });
+
+        if (!signInError) {
+          signedIn = true;
+          break;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 500 + attempt * 250));
+      }
+
+      if (!signedIn) {
+        setErrorMessage("Conta criada, mas nao foi possivel iniciar a sessao automaticamente. Verifique o login.");
+        return;
+      }
+
       setComplete(true);
-      setTimeout(() => setLocation("/"), 2500);
-    } catch {
-      setErrorMessage("Nao foi possivel conectar com o Supabase.");
+      setSuccessMessage("Your universe is ready. Redirecting to Universe Awakening...");
+      setTimeout(() => setLocation("/universe-awakening"), 2200);
+    } catch (error) {
+      setErrorMessage(formatAuthError(error as { message?: string }, "Nao foi possivel conectar com o Supabase."));
+    } finally {
       setIsLoading(false);
     }
   };
@@ -101,7 +228,7 @@ export default function Signup() {
     setTimeout(() => {
       setWalletConnecting(false);
       setComplete(true);
-      setTimeout(() => setLocation("/"), 2500);
+      setTimeout(() => setLocation("/dashboard"), 2500);
     }, 2500);
   };
 
@@ -116,11 +243,12 @@ export default function Signup() {
             key={i}
             className="absolute rounded-full"
             style={{
-              width: Math.random() * 3 + 1 + "px",
-              height: Math.random() * 3 + 1 + "px",
-              backgroundColor: i % 3 === 0 ? "rgba(140,80,255,0.4)" : i % 3 === 1 ? "rgba(60,130,255,0.3)" : "rgba(180,140,255,0.2)",
-              top: Math.random() * 100 + "%",
-              left: Math.random() * 100 + "%",
+              width: `${Math.random() * 3 + 1}px`,
+              height: `${Math.random() * 3 + 1}px`,
+              backgroundColor:
+                i % 3 === 0 ? "rgba(140,80,255,0.4)" : i % 3 === 1 ? "rgba(60,130,255,0.3)" : "rgba(180,140,255,0.2)",
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
               animation: `float ${3 + Math.random() * 4}s ease-in-out ${Math.random() * 3}s infinite alternate`,
             }}
           />
@@ -154,6 +282,7 @@ export default function Signup() {
             </motion.div>
             <h2 className="font-orbitron text-3xl font-bold gradient-text mb-3">Universe Created</h2>
             <p className="text-muted-foreground font-mono text-sm mb-2">NOX has recorded your essence.</p>
+            {successMessage ? <p className="text-cyan-300 font-mono text-xs mb-2">{successMessage}</p> : null}
             <p className="text-primary/60 font-mono text-xs">Entering dreamscape...</p>
             <div className="flex justify-center gap-1 mt-6">
               {[0, 1, 2].map((i) => (
@@ -193,204 +322,191 @@ export default function Signup() {
               </div>
 
               <div className="flex items-center gap-2 mb-7">
-                {steps.map((s, i) => (
-                  <div key={s} className="flex items-center flex-1">
+                {steps.map((label, index) => (
+                  <div key={label} className="flex items-center flex-1">
                     <div className="flex flex-col items-center w-full">
                       <div
                         className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-orbitron font-bold transition-all duration-300 ${
-                          i < step
+                          index < step
                             ? "bg-primary text-white shadow-[0_0_12px_rgba(140,80,255,0.6)]"
-                            : i === step
+                            : index === step
                             ? "border-2 border-primary text-primary shadow-[0_0_10px_rgba(140,80,255,0.4)]"
                             : "border border-border/50 text-muted-foreground"
                         }`}
                       >
-                        {i < step ? <Check className="w-3.5 h-3.5" /> : i + 1}
+                        {index < step ? <Check className="w-3.5 h-3.5" /> : index + 1}
                       </div>
-                      <span className={`text-[10px] font-mono mt-1 ${i === step ? "text-primary" : "text-muted-foreground/50"}`}>{s}</span>
+                      <span className={`text-[10px] font-mono mt-1 ${index === step ? "text-primary" : "text-muted-foreground/50"}`}>{label}</span>
                     </div>
-                    {i < steps.length - 1 && (
-                      <div className={`flex-1 h-px mb-4 transition-all duration-300 ${i < step ? "bg-primary/60" : "bg-border/40"}`} />
-                    )}
+                    {index < steps.length - 1 ? (
+                      <div className={`flex-1 h-px mb-4 transition-all duration-300 ${index < step ? "bg-primary/60" : "bg-border/40"}`} />
+                    ) : null}
                   </div>
                 ))}
               </div>
 
-              {step === 0 && (
-                <motion.div
-                  key="step0"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-4"
-                >
-                  <motion.button
-                    onClick={handleWallet}
-                    disabled={walletConnecting}
-                    data-testid="button-connect-wallet-signup"
-                    className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-primary/40 bg-primary/10 hover:bg-primary/20 hover:border-primary/70 transition-all duration-300 font-orbitron text-sm text-primary neon-glow disabled:opacity-70"
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
+              <AnimatePresence mode="wait">
+                {step === 0 ? (
+                  <motion.div
+                    key="step0"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="space-y-4"
                   >
-                    {walletConnecting ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-primary/50 border-t-primary rounded-full animate-spin" />
-                        <span>Linking Wallet...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Wallet className="w-4 h-4" />
-                        <span>Register with Solana Wallet</span>
-                        <Zap className="w-3 h-3 opacity-60" />
-                      </>
-                    )}
-                  </motion.button>
+                    <motion.button
+                      onClick={handleWallet}
+                      disabled={walletConnecting}
+                      data-testid="button-connect-wallet-signup"
+                      className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-primary/40 bg-primary/10 hover:bg-primary/20 hover:border-primary/70 transition-all duration-300 font-orbitron text-sm text-primary neon-glow disabled:opacity-70"
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                    >
+                      {walletConnecting ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-primary/50 border-t-primary rounded-full animate-spin" />
+                          <span>Linking Wallet...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Wallet className="w-4 h-4" />
+                          <span>Register with Solana Wallet</span>
+                          <Zap className="w-3 h-3 opacity-60" />
+                        </>
+                      )}
+                    </motion.button>
 
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 h-px bg-border/50" />
-                    <span className="text-xs text-muted-foreground font-mono tracking-wider">OR</span>
-                    <div className="flex-1 h-px bg-border/50" />
-                  </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 h-px bg-border/50" />
+                      <span className="text-xs text-muted-foreground font-mono tracking-wider">OR</span>
+                      <div className="flex-1 h-px bg-border/50" />
+                    </div>
 
-                  <div>
-                    <label className="text-xs font-mono text-primary/70 tracking-widest uppercase block mb-1.5">Dreamer Name</label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <input
-                        type="text"
-                        value={form.username}
-                        onChange={(e) => update("username", e.target.value)}
-                        placeholder="NebulaWalker"
-                        data-testid="input-username"
-                        className="w-full pl-10 pr-4 py-3 bg-background/50 border border-border/60 focus:border-primary/70 focus:shadow-[0_0_15px_rgba(140,80,255,0.2)] rounded-xl text-sm text-foreground placeholder:text-muted-foreground/50 outline-none transition-all duration-300 font-mono"
-                      />
+                    <div>
+                      <label className="text-xs font-mono text-primary/70 tracking-widest uppercase block mb-1.5">Username / @handle</label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <input
+                          type="text"
+                          value={form.username}
+                          onChange={(e) => update("username", e.target.value)}
+                          placeholder="NebulaWalker"
+                          data-testid="input-username"
+                          className="w-full pl-10 pr-4 py-3 bg-background/50 border border-border/60 focus:border-primary/70 focus:shadow-[0_0_15px_rgba(140,80,255,0.2)] rounded-xl text-sm text-foreground placeholder:text-muted-foreground/50 outline-none transition-all duration-300 font-mono"
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <label className="text-xs font-mono text-primary/70 tracking-widest uppercase block mb-1.5">Email Address</label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <input
-                        type="email"
-                        value={form.email}
-                        onChange={(e) => update("email", e.target.value)}
-                        placeholder="dreamer@universe.sol"
-                        data-testid="input-email-signup"
-                        className="w-full pl-10 pr-4 py-3 bg-background/50 border border-border/60 focus:border-primary/70 focus:shadow-[0_0_15px_rgba(140,80,255,0.2)] rounded-xl text-sm text-foreground placeholder:text-muted-foreground/50 outline-none transition-all duration-300 font-mono"
-                      />
-                    </div>
-                  </div>
-                </motion.div>
-              )}
 
-              {step === 1 && (
-                <motion.div
-                  key="step1"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-4"
-                >
-                  <div>
-                    <label className="text-xs font-mono text-primary/70 tracking-widest uppercase block mb-1.5">Password</label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        value={form.password}
-                        onChange={(e) => update("password", e.target.value)}
-                        placeholder="••••••••••••"
-                        data-testid="input-password-signup"
-                        className="w-full pl-10 pr-12 py-3 bg-background/50 border border-border/60 focus:border-primary/70 focus:shadow-[0_0_15px_rgba(140,80,255,0.2)] rounded-xl text-sm text-foreground placeholder:text-muted-foreground/50 outline-none transition-all duration-300 font-mono"
-                      />
-                      <button type="button" onClick={() => setShowPassword(!showPassword)} data-testid="button-toggle-password-signup" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors">
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
+                    <div>
+                      <label className="text-xs font-mono text-primary/70 tracking-widest uppercase block mb-1.5">Email Address</label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <input
+                          type="email"
+                          value={form.email}
+                          onChange={(e) => update("email", e.target.value)}
+                          placeholder="dreamer@universe.sol"
+                          data-testid="input-email-signup"
+                          className="w-full pl-10 pr-4 py-3 bg-background/50 border border-border/60 focus:border-primary/70 focus:shadow-[0_0_15px_rgba(140,80,255,0.2)] rounded-xl text-sm text-foreground placeholder:text-muted-foreground/50 outline-none transition-all duration-300 font-mono"
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <label className="text-xs font-mono text-primary/70 tracking-widest uppercase block mb-1.5">Confirm Password</label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <input
-                        type={showConfirm ? "text" : "password"}
-                        value={form.confirm}
-                        onChange={(e) => update("confirm", e.target.value)}
-                        placeholder="••••••••••••"
-                        data-testid="input-confirm-password"
-                        className="w-full pl-10 pr-12 py-3 bg-background/50 border border-border/60 focus:border-primary/70 focus:shadow-[0_0_15px_rgba(140,80,255,0.2)] rounded-xl text-sm text-foreground placeholder:text-muted-foreground/50 outline-none transition-all duration-300 font-mono"
-                      />
-                      <button type="button" onClick={() => setShowConfirm(!showConfirm)} data-testid="button-toggle-confirm" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors">
-                        {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                    {form.confirm && form.password !== form.confirm && (
-                      <p className="text-xs text-red-400/80 font-mono mt-1">Passwords do not match</p>
-                    )}
-                  </div>
-                  <div className="glass rounded-xl p-3 border border-primary/10">
-                    <p className="text-xs font-mono text-muted-foreground">Password strength: <span className={`${form.password.length >= 8 ? "text-green-400" : "text-amber-400"}`}>{form.password.length >= 12 ? "STRONG" : form.password.length >= 8 ? "MODERATE" : "WEAK"}</span></p>
-                    <div className="flex gap-1 mt-2">
-                      {[0, 1, 2, 3].map((i) => (
-                        <div key={i} className={`h-1 flex-1 rounded-full transition-all duration-300 ${form.password.length > i * 3 ? "bg-primary/80" : "bg-border/30"}`} />
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-
-              {step === 2 && (
-                <motion.div
-                  key="step2"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-5"
-                >
-                  <div>
-                    <label className="text-xs font-mono text-primary/70 tracking-widest uppercase block mb-1.5">Dream ID (public handle)</label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 font-mono text-sm">@</span>
-                      <input
-                        type="text"
-                        value={form.dreamerId}
-                        onChange={(e) => update("dreamerId", e.target.value)}
-                        placeholder="nebula.sol"
-                        data-testid="input-dreamer-id"
-                        className="w-full pl-8 pr-4 py-3 bg-background/50 border border-border/60 focus:border-primary/70 focus:shadow-[0_0_15px_rgba(140,80,255,0.2)] rounded-xl text-sm text-foreground placeholder:text-muted-foreground/50 outline-none transition-all duration-300 font-mono"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-xs font-mono text-primary/70 tracking-widest uppercase block mb-2">Primary Dream Category</label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {categories.map((cat) => (
-                        <button
-                          key={cat}
-                          type="button"
-                          onClick={() => update("category", cat)}
-                          data-testid={`button-category-${cat.toLowerCase()}`}
-                          className={`py-2 px-3 rounded-lg text-xs font-orbitron tracking-wide transition-all duration-200 border ${
-                            form.category === cat
-                              ? "border-primary bg-primary/20 text-primary shadow-[0_0_10px_rgba(140,80,255,0.3)]"
-                              : "border-border/40 text-muted-foreground hover:border-primary/40 hover:text-primary/70"
-                          }`}
-                        >
-                          {cat}
+                  </motion.div>
+                ) : step === 1 ? (
+                  <motion.div
+                    key="step1"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="space-y-4"
+                  >
+                    <div>
+                      <label className="text-xs font-mono text-primary/70 tracking-widest uppercase block mb-1.5">Password</label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          value={form.password}
+                          onChange={(e) => update("password", e.target.value)}
+                          placeholder="••••••••••••"
+                          data-testid="input-password-signup"
+                          className="w-full pl-10 pr-12 py-3 bg-background/50 border border-border/60 focus:border-primary/70 focus:shadow-[0_0_15px_rgba(140,80,255,0.2)] rounded-xl text-sm text-foreground placeholder:text-muted-foreground/50 outline-none transition-all duration-300 font-mono"
+                        />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} data-testid="button-toggle-password-signup" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors">
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
-                      ))}
+                      </div>
                     </div>
-                  </div>
-                  <div className="glass rounded-xl p-3 border border-primary/10">
-                    <p className="text-xs font-mono text-muted-foreground/70 leading-relaxed">
-                      By creating your account you agree to grant NOX access to your dream patterns for universe generation. Your consciousness data is stored on Solana and is fully owned by you.
-                    </p>
-                  </div>
-                </motion.div>
-              )}
+
+                    <div>
+                      <label className="text-xs font-mono text-primary/70 tracking-widest uppercase block mb-1.5">Confirm Password</label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <input
+                          type={showConfirm ? "text" : "password"}
+                          value={form.confirm}
+                          onChange={(e) => update("confirm", e.target.value)}
+                          placeholder="••••••••••••"
+                          data-testid="input-confirm-password"
+                          className="w-full pl-10 pr-12 py-3 bg-background/50 border border-border/60 focus:border-primary/70 focus:shadow-[0_0_15px_rgba(140,80,255,0.2)] rounded-xl text-sm text-foreground placeholder:text-muted-foreground/50 outline-none transition-all duration-300 font-mono"
+                        />
+                        <button type="button" onClick={() => setShowConfirm(!showConfirm)} data-testid="button-toggle-confirm" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors">
+                          {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="glass rounded-xl p-3 border border-primary/10">
+                      <p className="text-xs font-mono text-muted-foreground">
+                        Password strength: <span className={`${form.password.length >= 8 ? "text-green-400" : "text-amber-400"}`}>{form.password.length >= 12 ? "STRONG" : form.password.length >= 8 ? "MODERATE" : "WEAK"}</span>
+                      </p>
+                      <div className="flex gap-1 mt-2">
+                        {[0, 1, 2, 3].map((bar) => (
+                          <div key={bar} className={`h-1 flex-1 rounded-full transition-all duration-300 ${form.password.length > bar * 3 ? "bg-primary/80" : "bg-border/30"}`} />
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="step2"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="space-y-5"
+                  >
+                    <div>
+                      <label className="text-xs font-mono text-primary/70 tracking-widest uppercase block mb-2">Primary Dream Category</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {categories.map((category) => (
+                          <button
+                            key={category}
+                            type="button"
+                            onClick={() => update("category", category)}
+                            data-testid={`button-category-${category.toLowerCase()}`}
+                            className={`py-2 px-3 rounded-lg text-xs font-orbitron tracking-wide transition-all duration-200 border ${
+                              form.category === category
+                                ? "border-primary bg-primary/20 text-primary shadow-[0_0_10px_rgba(140,80,255,0.3)]"
+                                : "border-border/40 text-muted-foreground hover:border-primary/40 hover:text-primary/70"
+                            }`}
+                          >
+                            {category}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="glass rounded-xl p-3 border border-primary/10">
+                      <p className="text-xs font-mono text-muted-foreground/70 leading-relaxed">
+                        By creating your account you agree to grant NOX access to your dream patterns for universe generation.
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <div className="flex gap-3 mt-6">
-                {step > 0 && (
+                {step > 0 ? (
                   <button
                     type="button"
                     onClick={() => setStep(step - 1)}
@@ -399,7 +515,7 @@ export default function Signup() {
                   >
                     Back
                   </button>
-                )}
+                ) : null}
                 <motion.button
                   type="button"
                   onClick={handleNext}
@@ -415,7 +531,7 @@ export default function Signup() {
                     {isLoading ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                        <span>Forging Universe...</span>
+                        <span>Creating your universe...</span>
                       </>
                     ) : step < 2 ? (
                       <>
@@ -424,7 +540,7 @@ export default function Signup() {
                       </>
                     ) : (
                       <>
-                        <span>Create Universe</span>
+                        <span>Forge Universe</span>
                         <Zap className="w-4 h-4" />
                       </>
                     )}

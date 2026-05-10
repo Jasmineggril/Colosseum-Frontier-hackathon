@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Link, useLocation } from "wouter";
 import { Eye, EyeOff, Wallet, Mail, Lock, ArrowRight, Zap } from "lucide-react";
 import { isSupabaseConfigured, supabase, supabaseConfigError } from "@/lib/supabase";
+import { formatAuthError } from "@/lib/profile";
 
 const wolfImage = `/nox-wolf.jpeg`;
 
@@ -32,11 +33,11 @@ export default function Login() {
       });
 
       if (error) {
-        setErrorMessage("Falha ao entrar. Verifique suas credenciais.");
+        setErrorMessage(formatAuthError(error, "Falha ao entrar. Verifique suas credenciais."));
         return;
       }
 
-      setLocation("/");
+      setLocation("/universe-awakening");
     } catch {
       setErrorMessage("Nao foi possivel conectar com o Supabase.");
     } finally {
@@ -48,7 +49,7 @@ export default function Login() {
     setWalletConnecting(true);
     setTimeout(() => {
       setWalletConnecting(false);
-      setLocation("/");
+      setLocation("/universe-awakening");
     }, 2500);
   };
 
