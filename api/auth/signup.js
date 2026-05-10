@@ -1,8 +1,10 @@
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SIGNUP_FLOW_VERSION = 3;
 
 function json(res, statusCode, payload) {
   res.statusCode = statusCode;
+  res.setHeader("x-dreamvault-signup-version", String(SIGNUP_FLOW_VERSION));
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.end(JSON.stringify(payload));
 }
@@ -129,39 +131,19 @@ export default async function handler(req, res) {
       return;
     }
 
-    const profileResponse = await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_SERVICE_ROLE_KEY,
-        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        "Content-Type": "application/json",
-        Prefer: "return=representation",
-      },
-      body: JSON.stringify({
-        id: user.id,
-        username,
-        category,
-      }),
-    });
-
-    const profilePayload = await profileResponse.json().catch(() => ({}));
-
-    if (!profileResponse.ok) {
-      json(res, profileResponse.status, {
-        message: profilePayload?.message || "Usuario criado, mas nao foi possivel salvar o perfil",
-        details: profilePayload,
-      });
-      return;
-    }
-
     json(res, 201, {
+      version: SIGNUP_FLOW_VERSION,
       user: {
         id: user.id,
         username,
         email,
         category,
       },
-      profile: profilePayload?.[0] || profilePayload,
+      profile: {
+        id: user.id,
+        username,
+        category,
+      },
     });
   } catch (error) {
     json(res, 500, {

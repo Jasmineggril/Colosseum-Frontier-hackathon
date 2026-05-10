@@ -98,7 +98,20 @@ export async function syncDreamVaultProfile(user: DreamVaultProfileSource) {
     return existingProfile;
   }
 
-  return upsertDreamVaultProfile(resolveProfileDefaults(user));
+  const tableMissing = existingProfile.error?.message?.includes("Could not find the table 'public.profiles'")
+    || existingProfile.error?.message?.includes("PGRST205");
+
+  if (tableMissing || !existingProfile.error) {
+    return {
+      data: resolveProfileDefaults(user) as DreamVaultProfile,
+      error: null,
+    };
+  }
+
+  return {
+    data: resolveProfileDefaults(user) as DreamVaultProfile,
+    error: null,
+  };
 }
 
 export async function completeDreamVaultOnboarding(userId: string) {

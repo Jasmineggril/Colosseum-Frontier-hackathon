@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link, useLocation } from "wouter";
 import { Eye, EyeOff, Wallet, Mail, Lock, User, ArrowRight, Zap, Check } from "lucide-react";
 import { isSupabaseConfigured, supabase, supabaseConfigError } from "@/lib/supabase";
-import { formatAuthError, upsertDreamVaultProfile } from "@/lib/profile";
+import { formatAuthError } from "@/lib/profile";
 
 const wolfImage = "/nox-wolf.jpeg";
 const steps = ["Identity", "Security", "Universe"];
@@ -177,18 +177,6 @@ export default function Signup() {
         }
 
         createdUserId = data.user.id;
-      }
-
-      const { error: profileError } = await upsertDreamVaultProfile({
-        id: createdUserId,
-        username: normalizeHandle(form.username),
-        category: form.category,
-        onboarding_completed: false,
-      });
-
-      if (profileError) {
-        setErrorMessage(formatAuthError(profileError, "Conta criada, mas nao foi possivel salvar o perfil no banco."));
-        return;
       }
 
       const maxAttempts = 4;
