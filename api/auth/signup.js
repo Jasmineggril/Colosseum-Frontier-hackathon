@@ -1,5 +1,10 @@
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_ANON_KEY =
+  process.env.SUPABASE_ANON_KEY ||
+  process.env.VITE_SUPABASE_ANON_KEY ||
+  process.env.SUPABASE_PUBLISHABLE_KEY ||
+  process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 const SIGNUP_FLOW_VERSION = 3;
 
 function json(res, statusCode, payload) {
@@ -61,8 +66,8 @@ async function createSessionFromPassword(email, password) {
     const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
       method: "POST",
       headers: {
-        apikey: SUPABASE_SERVICE_ROLE_KEY,
-        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        apikey: SUPABASE_ANON_KEY || SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY || SUPABASE_SERVICE_ROLE_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ email, password }),
