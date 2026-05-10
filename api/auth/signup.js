@@ -122,7 +122,7 @@ export default async function handler(req, res) {
       return;
     }
 
-    const user = createUserPayload?.user;
+    const user = createUserPayload?.user || createUserPayload;
 
     if (!user?.id) {
       json(res, 500, { message: "Supabase Auth nao retornou o usuario criado" });
