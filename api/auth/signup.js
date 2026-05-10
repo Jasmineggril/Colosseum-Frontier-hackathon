@@ -54,6 +54,40 @@ function isValidUsername(value) {
   return /^[a-zA-Z0-9._-]{3,32}$/.test(value);
 }
 
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function createSessionFromPassword(email, password) {
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const payload = await response.json().catch(() => ({}));
+
+    if (response.ok && payload?.access_token && payload?.refresh_token) {
+      return {
+        access_token: payload.access_token,
+        refresh_token: payload.refresh_token,
+        expires_in: payload.expires_in,
+        token_type: payload.token_type,
+        user: payload.user,
+      };
+    }
+
+    if (attempt < 5) {
+      await delay(750 + attempt * 500);
+    }
+  }
+
+  return null;
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
@@ -131,6 +165,8 @@ export default async function handler(req, res) {
       return;
     }
 
+    const session = await createSessionFromPassword(email, password);
+
     json(res, 201, {
       version: SIGNUP_FLOW_VERSION,
       user: {
@@ -144,6 +180,7 @@ export default async function handler(req, res) {
         username,
         category,
       },
+      session,
     });
   } catch (error) {
     json(res, 500, {

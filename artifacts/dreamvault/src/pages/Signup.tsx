@@ -126,6 +126,17 @@ export default function Signup() {
       try {
         const responseBody = await createViaAdmin();
         createdUserId = String(responseBody?.user?.id ?? "");
+
+        if (responseBody?.session?.access_token && responseBody?.session?.refresh_token) {
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: responseBody.session.access_token,
+            refresh_token: responseBody.session.refresh_token,
+          });
+
+          if (sessionError) {
+            throw sessionError;
+          }
+        }
       } catch (error) {
         const typedError = error as { message?: string; status?: number };
         const message = formatAuthError(typedError, "Falha ao criar conta.");
