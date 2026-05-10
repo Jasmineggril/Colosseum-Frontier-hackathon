@@ -67,7 +67,6 @@ async function createSessionFromPassword(email, password) {
       method: "POST",
       headers: {
         apikey: SUPABASE_ANON_KEY || SUPABASE_SERVICE_ROLE_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY || SUPABASE_SERVICE_ROLE_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ email, password }),
