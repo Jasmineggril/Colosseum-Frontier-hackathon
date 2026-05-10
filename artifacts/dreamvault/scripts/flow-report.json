@@ -1,0 +1,24 @@
+{
+  "generatedAt": "2026-05-10T00:24:36Z",
+  "repo": "Jasmineggril/Colosseum-Frontier-hackathon",
+  "commit": "5810315",
+  "target": "https://dreamvault.vercel.app",
+  "summary": {
+    "totalSteps": 9,
+    "passed": 9,
+    "failed": 0
+  },
+  "steps": [
+    "Open homepage",
+    "Login navigation works",
+    "Login page controls work",
+    "Back to home route",
+    "Hero CTA buttons are clickable",
+    "Dream generation flow reaches result actions",
+    "Dream result action buttons are interactive",
+    "Gallery interaction buttons work",
+    "Navbar wallet connect button works"
+  ],
+  "notes": "Full E2E run against production completed successfully. See artifacts/dreamvault/scripts/flow-check.png for screenshot.",
+  "artifact": "artifacts/dreamvault/scripts/flow-check.png"
+}
