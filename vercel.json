@@ -1,5 +1,11 @@
 {
   "version": 2,
   "buildCommand": "pnpm run typecheck && pnpm -r --filter @workspace/dreamvault run build",
-  "outputDirectory": "artifacts/dreamvault/dist/public"
+  "outputDirectory": "artifacts/dreamvault/dist/public",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }
