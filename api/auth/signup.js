@@ -61,32 +61,54 @@ function isValidUsername(value) {
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function createSessionFromPassword(email, password) {
-  for (let attempt = 0; attempt < 6; attempt += 1) {
-    const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_ANON_KEY || SUPABASE_SERVICE_ROLE_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
+async function createSessionFromMagicLink(email) {
+  const generateResponse = await fetch(`${SUPABASE_URL}/auth/v1/admin/generate_link`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      type: "magiclink",
+      email,
+    }),
+  });
 
-    const payload = await response.json().catch(() => ({}));
+  const generatePayload = await generateResponse.json().catch(() => ({}));
 
-    if (response.ok && payload?.access_token && payload?.refresh_token) {
-      return {
-        access_token: payload.access_token,
-        refresh_token: payload.refresh_token,
-        expires_in: payload.expires_in,
-        token_type: payload.token_type,
-        user: payload.user,
-      };
-    }
+  if (!generateResponse.ok) {
+    return null;
+  }
 
-    if (attempt < 5) {
-      await delay(750 + attempt * 500);
-    }
+  const tokenHash = generatePayload?.properties?.hashed_token || generatePayload?.hashed_token || generatePayload?.hashedToken;
+
+  if (!tokenHash) {
+    return null;
+  }
+
+  const verifyResponse = await fetch(`${SUPABASE_URL}/auth/v1/verify`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_ANON_KEY || SUPABASE_SERVICE_ROLE_KEY,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      type: "magiclink",
+      token_hash: tokenHash,
+    }),
+  });
+
+  const verifyPayload = await verifyResponse.json().catch(() => ({}));
+
+  if (verifyResponse.ok && verifyPayload?.access_token && verifyPayload?.refresh_token) {
+    return {
+      access_token: verifyPayload.access_token,
+      refresh_token: verifyPayload.refresh_token,
+      expires_in: verifyPayload.expires_in,
+      token_type: verifyPayload.token_type,
+      user: verifyPayload.user,
+    };
   }
 
   return null;
@@ -169,7 +191,7 @@ export default async function handler(req, res) {
       return;
     }
 
-    const session = await createSessionFromPassword(email, password);
+    const session = await createSessionFromMagicLink(email);
 
     json(res, 201, {
       version: SIGNUP_FLOW_VERSION,
