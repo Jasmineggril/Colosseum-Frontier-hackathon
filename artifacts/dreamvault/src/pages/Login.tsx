@@ -2,8 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useLocation } from "wouter";
 import { Eye, EyeOff, Wallet, Mail, Lock, ArrowRight, Zap } from "lucide-react";
-import { isSupabaseConfigured, supabase, supabaseConfigError } from "@/lib/supabase";
-import { formatAuthError } from "@/lib/profile";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 
 const wolfImage = `/nox-wolf.jpeg`;
 
@@ -23,7 +22,8 @@ export default function Login() {
 
     try {
       if (!isSupabaseConfigured || !supabase) {
-        setErrorMessage(supabaseConfigError ?? "Supabase nao configurado. Defina VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.");
+        setErrorMessage("Supabase nao configurado. Defina VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.");
+        setIsLoading(false);
         return;
       }
 
@@ -33,13 +33,15 @@ export default function Login() {
       });
 
       if (error) {
-        setErrorMessage(formatAuthError(error, "Falha ao entrar. Verifique suas credenciais."));
+        setErrorMessage(error.message || "Falha ao entrar. Verifique suas credenciais.");
+        setIsLoading(false);
         return;
       }
 
-      setLocation("/universe-awakening");
-    } catch {
-      setErrorMessage("Nao foi possivel conectar com o Supabase.");
+      setLocation("/");
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Nao foi possivel conectar com o Supabase.";
+      setErrorMessage(errorMsg);
     } finally {
       setIsLoading(false);
     }
@@ -49,7 +51,7 @@ export default function Login() {
     setWalletConnecting(true);
     setTimeout(() => {
       setWalletConnecting(false);
-      setLocation("/universe-awakening");
+      setLocation("/");
     }, 2500);
   };
 
