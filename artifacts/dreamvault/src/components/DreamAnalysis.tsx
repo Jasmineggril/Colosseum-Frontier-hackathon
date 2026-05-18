@@ -37,32 +37,45 @@ export default function DreamAnalysis() {
       // animated delay to feel premium
       await new Promise((r) => setTimeout(r, 900));
 
-      const result = generateMockAnalysis(dream);
-      setAnalysis(result);
-
-      // try save to Supabase (best-effort)
-      if (isSupabaseConfigured && supabase) {
-        const { error: insertErr } = await supabase.from("dreams").insert({
-          dream_text: dream,
-          analysis: result,
-          created_at: new Date().toISOString(),
+      // Try server-side analysis and save via /api/dreams
+      try {
+        const resp = await fetch("/api/dreams", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ dream_text: dream, category: undefined }),
         });
 
-        if (insertErr) {
-          // fallback to localStorage
-          console.warn("Supabase insert failed:", insertErr.message);
-          const history = JSON.parse(localStorage.getItem("dream_history" ) || "[]");
-          history.unshift({ dream, analysis: result, created_at: new Date().toISOString() });
-          localStorage.setItem("dream_history", JSON.stringify(history));
-        } else {
-          // invalidate queries if any
+        if (resp.ok) {
+          const json = await resp.json();
+          const returnedAnalysis = json.analysis ?? (json.data?.[0]?.analysis ?? null);
+          if (typeof returnedAnalysis === "string") {
+            setAnalysis(returnedAnalysis);
+          } else if (returnedAnalysis && typeof returnedAnalysis === "object") {
+            // if object, prefer `analysis` or `text` fields
+            setAnalysis(returnedAnalysis.analysis ?? returnedAnalysis.text ?? JSON.stringify(returnedAnalysis));
+          } else {
+            setAnalysis("Analysis saved. (no AI output)");
+          }
+
           qc.invalidateQueries({ queryKey: ["dream_history"] });
+          setLoading(false);
+          return;
         }
-      } else {
-        const history = JSON.parse(localStorage.getItem("dream_history" ) || "[]");
-        history.unshift({ dream, analysis: result, created_at: new Date().toISOString() });
-        localStorage.setItem("dream_history", JSON.stringify(history));
+
+        const text = await resp.text();
+        console.warn("/api/dreams failed:", text);
+        // fallthrough to local mock
+      } catch (e) {
+        console.warn("/api/dreams request error", e);
+        // fallthrough
       }
+
+      // fallback: generate mock analysis and persist locally
+      const result = generateMockAnalysis(dream);
+      setAnalysis(result);
+      const history = JSON.parse(localStorage.getItem("dream_history" ) || "[]");
+      history.unshift({ dream, analysis: result, created_at: new Date().toISOString() });
+      localStorage.setItem("dream_history", JSON.stringify(history));
     } catch (e: any) {
       setError(e?.message ?? "Erro ao analisar sonho");
     } finally {
