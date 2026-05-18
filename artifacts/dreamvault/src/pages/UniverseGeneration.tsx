@@ -79,6 +79,10 @@ export default function UniverseGeneration() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [selected, setSelected] = useState<Category>("Cosmic");
+  const [step, setStep] = useState(0);
+  const [intensity, setIntensity] = useState(60);
+  const [tone, setTone] = useState("cinematic");
+  const [dimensionNote, setDimensionNote] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -98,7 +102,9 @@ export default function UniverseGeneration() {
         if (error) throw error;
 
         setProfile(data);
-        setSelected((data?.category as Category) || "Cosmic");
+        const savedCategory = (localStorage.getItem("dreamvault_last_category") as Category | null) || null;
+        setSelected((data?.category as Category) || savedCategory || "Cosmic");
+        setDimensionNote(localStorage.getItem("dreamvault_last_dimension_note") || "");
       } catch (err) {
         if (!mounted) return;
         setErrorMessage(formatAuthError(err as { message?: string }, "Nao foi possivel carregar sua dimensão."));
@@ -114,6 +120,23 @@ export default function UniverseGeneration() {
   }, [setLocation]);
 
   const theme = useMemo(() => categories.find((item) => item.id === selected) ?? categories[0], [selected]);
+  const progress = ((step + 1) / 3) * 100;
+
+  const stepHint = [
+    "Choose the dimension that defines the universe.",
+    "Tune emotional pressure and audiovisual tone.",
+    "Review the world before forging it.",
+  ][step];
+
+  const advance = () => {
+    audio.playSfx("hover");
+    setStep((current) => Math.min(current + 1, 2));
+  };
+
+  const retreat = () => {
+    audio.playSfx("hover");
+    setStep((current) => Math.max(current - 1, 0));
+  };
 
   const handleForge = async () => {
     if (!profile) return;
@@ -135,6 +158,9 @@ export default function UniverseGeneration() {
       if (error) throw error;
 
       localStorage.setItem("dreamvault_last_category", selected);
+      localStorage.setItem("dreamvault_last_dimension_note", dimensionNote);
+      localStorage.setItem("dreamvault_last_dimension_tone", tone);
+      localStorage.setItem("dreamvault_last_dimension_intensity", String(intensity));
       setLocation("/analysis");
     } catch (err) {
       setErrorMessage(formatAuthError(err as { message?: string }, "Nao foi possivel forjar seu universo."));
@@ -179,6 +205,16 @@ export default function UniverseGeneration() {
           >
             Open Dashboard
           </button>
+        </div>
+
+        <div className="mb-8 rounded-full border border-white/10 bg-white/5 p-2 backdrop-blur-xl">
+          <div className="h-2 rounded-full bg-black/20">
+            <div className="h-2 rounded-full bg-gradient-to-r from-primary to-cyan-400 transition-all duration-500" style={{ width: `${progress}%` }} />
+          </div>
+          <div className="mt-3 flex items-center justify-between text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
+            <span>Step {step + 1} of 3</span>
+            <span>{stepHint}</span>
+          </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
@@ -270,23 +306,83 @@ export default function UniverseGeneration() {
               <div className="grid gap-3 sm:grid-cols-2">
                 <button
                   type="button"
-                  onClick={handleForge}
+                  onClick={step === 2 ? handleForge : advance}
                   disabled={saving}
                   className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-primary to-cyan-400 px-5 py-4 font-orbitron text-sm font-semibold text-white shadow-[0_0_35px_rgba(124,58,237,0.35)] transition hover:scale-[1.01] disabled:opacity-70"
                 >
-                  {saving ? "Forging..." : "Forge Universe"}
+                  {saving ? "Forging..." : step === 2 ? "Forge Universe" : "Continue"}
                   <ArrowRight className="h-4 w-4" />
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => setLocation("/analysis")}
+                  onClick={step === 0 ? () => setLocation("/analysis") : retreat}
                   className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 font-orbitron text-sm font-semibold text-white transition hover:border-primary/30 hover:bg-primary/10"
                 >
-                  Analyze Dream
+                  {step === 0 ? "Analyze Dream" : "Back"}
                   <Sparkles className="h-4 w-4" />
                 </button>
               </div>
+
+              {step === 1 ? (
+                <div className="grid gap-4 rounded-2xl border border-white/10 bg-black/20 p-5">
+                  <div>
+                    <div className="mb-2 flex items-center justify-between text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                      <span>Emotional Intensity</span>
+                      <span>{intensity}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={intensity}
+                      onChange={(e) => {
+                        setIntensity(Number(e.target.value));
+                        audio.playSfx("hover");
+                      }}
+                      className="w-full accent-primary"
+                    />
+                  </div>
+
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    {[
+                      { value: "cinematic", label: "Cinematic" },
+                      { value: "meditative", label: "Meditative" },
+                      { value: "chaotic", label: "Chaotic" },
+                    ].map((item) => (
+                      <button
+                        key={item.value}
+                        type="button"
+                        onClick={() => {
+                          setTone(item.value);
+                          audio.playSfx("hover");
+                        }}
+                        className={`rounded-xl border px-3 py-2 text-sm transition-all ${tone === item.value ? "border-primary/40 bg-primary/15 text-white" : "border-white/10 bg-white/5 text-muted-foreground hover:text-white"}`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {step === 2 ? (
+                <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+                  <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Final review</p>
+                  <div className="mt-4 space-y-2 text-sm text-white/90">
+                    <p><span className="text-muted-foreground">Category:</span> {selected}</p>
+                    <p><span className="text-muted-foreground">Intensity:</span> {intensity}%</p>
+                    <p><span className="text-muted-foreground">Tone:</span> {tone}</p>
+                    <p><span className="text-muted-foreground">Profile:</span> {profile?.username || "Dreamer"}</p>
+                  </div>
+                  <textarea
+                    value={dimensionNote}
+                    onChange={(e) => setDimensionNote(e.target.value)}
+                    placeholder="Optional note for this universe: what should NOX remember?"
+                    className="mt-4 min-h-[110px] w-full rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white placeholder:text-muted-foreground outline-none"
+                  />
+                </div>
+              ) : null}
 
               {errorMessage ? <p className="text-sm text-red-300">{errorMessage}</p> : null}
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 const categories = ["Cosmic", "Horror", "Fantasy", "Sci-Fi", "Abstract", "Mythological"] as const;
@@ -19,6 +19,13 @@ export default function DreamAnalysis() {
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState<(typeof categories)[number]>("Cosmic");
   const qc = useQueryClient();
+
+  useEffect(() => {
+    const savedCategory = localStorage.getItem("dreamvault_last_category");
+    if (savedCategory && categories.includes(savedCategory as (typeof categories)[number])) {
+      setCategory(savedCategory as (typeof categories)[number]);
+    }
+  }, []);
 
   const generateMockAnalysis = (text: string) => {
     // Simple deterministic mock: extract words and emotions

@@ -16,16 +16,17 @@ https://dreamvault.vercel.app
 
 ## Product Vision (Pitch)
 
-DreamVault explores a simple but powerful idea: every dream can become a living digital world.
+DreamVault turns human dreams into living, cinematic digital worlds.
 
-Users describe a dream, and the platform transforms it into a unique universe concept with cinematic reveal moments, rich lore, and rarity-driven identity.
+The current product experience is no longer just a landing page — it is a startup-style SaaS flow with onboarding, dream analysis, category-based universe selection, dashboard history, and a community feed.
 
 Core user-facing highlights:
 
-- Dream prompt to universe concept flow
-- Cinematic reveal and immersive generation UX
-- Dynamic lore, traits, and rarity generation
-- Community-style gallery and live activity vibe
+- Landing page → authentication → onboarding → universe generation → dream analysis → dashboard → community feed
+- Category-based dimension selection that changes the visual and audio identity
+- Server-side dream analysis with optional OpenAI integration
+- Persistent dream history stored in Supabase
+- Cinematic reveal moments and ambient audio immersion
 - Web3-inspired interaction layer (wallet-style flow)
 
 ## Technical Snapshot
@@ -58,12 +59,37 @@ Monorepo structure:
   - See `artifacts/dreamvault/.env.production.example` for step-by-step instructions
 - Get API keys from Supabase Settings: https://app.supabase.com/project/YOUR_PROJECT_ID/settings/api
 
+4. Server-side environment (for `artifacts/api-server`)
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `DATABASE_URL`
+- Optional: `OPENAI_API_KEY` for higher-quality dream analysis
+
 ## Quick Verification
 
 ```bash
 pnpm -w run typecheck
 pnpm -w --filter @workspace/dreamvault build
 curl -I https://dreamvault.vercel.app
+```
+
+## Main Routes
+
+- `/` — landing page
+- `/login` — authentication
+- `/signup` — onboarding entry
+- `/universe-generation` — multi-step dimension onboarding
+- `/analysis` — AI dream analysis experience
+- `/dashboard` — personal dashboard and dream history
+- `/community` — shared dream feed
+
+## Demo Seed
+
+Populate the dream feed after the API server is live:
+
+```bash
+cd artifacts/api-server
+pnpm run seed:dreams
 ```
 
 Engineering focus for hackathon delivery:
