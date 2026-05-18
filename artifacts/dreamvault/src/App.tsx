@@ -8,6 +8,7 @@ import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
 import Dashboard from "@/pages/Dashboard";
 import UniverseAwakening from "@/pages/UniverseAwakening";
+import UniverseGeneration from "@/pages/UniverseGeneration";
 import Analysis from "@/pages/Analysis";
 import { AudioProvider } from "@/lib/audio";
 
@@ -20,6 +21,7 @@ function Router() {
       <Route path="/analysis" component={Analysis} />
       <Route path="/login" component={Login} />
       <Route path="/signup" component={Signup} />
+      <Route path="/universe-generation" component={UniverseGeneration} />
       <Route path="/universe-awakening" component={UniverseAwakening} />
       <Route path="/dashboard" component={Dashboard} />
       <Route component={NotFound} />
@@ -31,12 +33,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AudioProvider>
-      <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
-        </WouterRouter>
-        <Toaster />
-      </TooltipProvider>
+        <TooltipProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <Router />
+          </WouterRouter>
+          <Toaster />
+        </TooltipProvider>
       </AudioProvider>
     </QueryClientProvider>
   );

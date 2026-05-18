@@ -1,9 +1,18 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { LogOut, Zap, Sparkles, ArrowRight, User, Mail, Settings, Home as HomeIcon, BadgeCheck } from "lucide-react";
+import { LogOut, Zap, Sparkles, ArrowRight, User, Mail, Settings, Home as HomeIcon, BadgeCheck, Orbit } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { syncDreamVaultProfile, type DreamVaultProfile } from "@/lib/profile";
+
+const categoryTheme: Record<string, { bg: string; accent: string; glow: string; label: string }> = {
+  Cosmic: { bg: "from-indigo-500/20 via-violet-500/10 to-cyan-400/10", accent: "text-cyan-200", glow: "shadow-[0_0_40px_rgba(124,58,237,0.16)]", label: "Infinite consciousness" },
+  Horror: { bg: "from-red-500/20 via-zinc-900/30 to-black", accent: "text-red-200", glow: "shadow-[0_0_40px_rgba(239,68,68,0.12)]", label: "Nightmare tension" },
+  Fantasy: { bg: "from-emerald-500/20 via-cyan-400/10 to-violet-500/10", accent: "text-emerald-200", glow: "shadow-[0_0_40px_rgba(34,197,94,0.12)]", label: "Magical serenity" },
+  "Sci-Fi": { bg: "from-sky-500/20 via-cyan-500/10 to-indigo-500/10", accent: "text-sky-200", glow: "shadow-[0_0_40px_rgba(56,189,248,0.12)]", label: "AI simulation" },
+  Abstract: { bg: "from-fuchsia-500/20 via-purple-500/10 to-pink-500/10", accent: "text-fuchsia-200", glow: "shadow-[0_0_40px_rgba(217,70,239,0.12)]", label: "Subconscious geometry" },
+  Mythological: { bg: "from-amber-400/20 via-yellow-500/10 to-orange-500/10", accent: "text-amber-200", glow: "shadow-[0_0_40px_rgba(251,191,36,0.12)]", label: "Sacred power" },
+};
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
@@ -38,10 +47,6 @@ export default function Dashboard() {
     setLocation("/");
   };
 
-  const handleStartDream = () => {
-    setLocation("/");
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -61,6 +66,7 @@ export default function Dashboard() {
   const username = profile?.username || user.user_metadata?.username || user.email?.split("@")[0] || "Sonhador";
   const category = profile?.category || user.user_metadata?.category || "Cosmic";
   const onboardingCompleted = profile?.onboarding_completed ?? false;
+  const theme = categoryTheme[category] || categoryTheme.Cosmic;
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden py-12">
@@ -107,12 +113,12 @@ export default function Dashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="lg:col-span-2 p-6 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10 border border-primary/20 backdrop-blur-sm hover:border-primary/40 transition-all"
+            className={`lg:col-span-2 p-6 rounded-xl bg-gradient-to-br ${theme.bg} border border-primary/20 backdrop-blur-sm hover:border-primary/40 transition-all ${theme.glow}`}
           >
             <div className="flex items-start justify-between mb-6">
               <div>
                 <h2 className="text-xl font-orbitron font-bold text-white flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-primary" />
+                  <Sparkles className={`w-5 h-5 ${theme.accent}`} />
                   Seu Perfil de Sonhador
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">Informações da sua conta interdimensional</p>
@@ -120,7 +126,7 @@ export default function Dashboard() {
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center gap-3 p-4 rounded-lg bg-background/50 border border-primary/10">
+                <div className="flex items-center gap-3 p-4 rounded-lg bg-background/50 border border-primary/10">
                 <User className="w-5 h-5 text-primary/60" />
                 <div>
                   <p className="text-xs text-muted-foreground">Nome de Usuário</p>
@@ -138,10 +144,11 @@ export default function Dashboard() {
 
               {category && (
                 <div className="flex items-center gap-3 p-4 rounded-lg bg-background/50 border border-accent/10">
-                  <Sparkles className="w-5 h-5 text-accent/60" />
+                  <Orbit className={`w-5 h-5 ${theme.accent}`} style={{ opacity: 0.75 }} />
                   <div>
                     <p className="text-xs text-muted-foreground">Categoria de Sonhos</p>
-                    <p className="text-white font-medium">{category}</p>
+                    <p className={`font-medium ${theme.accent}`}>{category}</p>
+                    <p className="text-xs text-muted-foreground">{theme.label}</p>
                   </div>
                 </div>
               )}
@@ -172,21 +179,21 @@ export default function Dashboard() {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={handleStartDream}
+                onClick={() => setLocation("/universe-generation")}
                 className="w-full p-3 rounded-lg bg-gradient-to-r from-primary to-secondary text-white font-semibold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-primary/50 transition-all"
               >
                 <Zap className="w-4 h-4" />
-                Gerar Sonho
+                Forjar Universo
               </motion.button>
 
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => setLocation("/")}
+                onClick={() => setLocation("/analysis")}
                 className="w-full p-3 rounded-lg bg-background/50 border border-primary/20 text-white font-semibold flex items-center justify-center gap-2 hover:border-primary/40 transition-all"
               >
                 <HomeIcon className="w-4 h-4" />
-                Voltar ao Início
+                Analisar Sonho
               </motion.button>
             </div>
           </motion.div>
@@ -195,7 +202,7 @@ export default function Dashboard() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
-            { label: "Sonhos Criados", value: "0", icon: "✨" },
+            { label: "Sonhos Criados", value: String(profile?.onboarding_completed ? 1 : 0), icon: "✨" },
             { label: "Comunidade", value: "Nox Collective", icon: "🌌" },
             { label: "Status", value: "Ativo", icon: "⚡" },
           ].map((stat, i) => (
@@ -220,17 +227,17 @@ export default function Dashboard() {
           transition={{ delay: 0.6 }}
           className="mt-12 p-8 rounded-xl bg-gradient-to-r from-primary/20 to-secondary/20 border border-primary/30 backdrop-blur-sm text-center"
         >
-          <h2 className="text-2xl font-orbitron font-bold text-white mb-3">Pronto para sonhar?</h2>
+          <h2 className="text-2xl font-orbitron font-bold text-white mb-3">Pronto para forjar o próximo universo?</h2>
           <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
             Explore o poder do DreamVault e transforme seus sonhos mais selvagens em universos digitais incríveis. Cada sonho é uma possibilidade infinita.
           </p>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={handleStartDream}
+            onClick={() => setLocation("/universe-generation")}
             className="inline-flex items-center gap-2 px-8 py-3 rounded-lg bg-gradient-to-r from-primary to-secondary text-white font-bold hover:shadow-lg hover:shadow-primary/50 transition-all"
           >
-            Começar um Novo Sonho
+            Abrir Universe Generation
             <ArrowRight className="w-5 h-5" />
           </motion.button>
         </motion.div>

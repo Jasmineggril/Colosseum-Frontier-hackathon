@@ -38,7 +38,7 @@ export default function Login() {
         return;
       }
 
-      setLocation("/");
+      setLocation("/universe-generation");
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "Nao foi possivel conectar com o Supabase.";
       setErrorMessage(errorMsg);
@@ -51,7 +51,7 @@ export default function Login() {
     setWalletConnecting(true);
     setTimeout(() => {
       setWalletConnecting(false);
-      setLocation("/");
+      setLocation("/universe-generation");
     }, 2500);
   };
 
