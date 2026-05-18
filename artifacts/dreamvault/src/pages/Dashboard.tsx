@@ -1,9 +1,17 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { LogOut, Zap, Sparkles, ArrowRight, User, Mail, Settings, Home as HomeIcon, BadgeCheck, Orbit } from "lucide-react";
+import { LogOut, Zap, Sparkles, ArrowRight, User, Mail, Settings, Home as HomeIcon, BadgeCheck, Orbit, MessageSquareQuote, LoaderCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { syncDreamVaultProfile, type DreamVaultProfile } from "@/lib/profile";
+
+type DreamRecord = {
+  id?: string;
+  dream_text: string;
+  analysis?: unknown;
+  category?: string | null;
+  created_at?: string;
+};
 
 const categoryTheme: Record<string, { bg: string; accent: string; glow: string; label: string }> = {
   Cosmic: { bg: "from-indigo-500/20 via-violet-500/10 to-cyan-400/10", accent: "text-cyan-200", glow: "shadow-[0_0_40px_rgba(124,58,237,0.16)]", label: "Infinite consciousness" },
@@ -19,6 +27,8 @@ export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<DreamVaultProfile | null>(null);
+  const [dreams, setDreams] = useState<DreamRecord[]>([]);
+  const [dreamsLoading, setDreamsLoading] = useState(true);
 
   useEffect(() => {
     const getUser = async () => {
@@ -32,10 +42,26 @@ export default function Dashboard() {
 
         const { data: profileData } = await syncDreamVaultProfile(data.user);
         setProfile(profileData);
+
+        try {
+          const feedResp = await fetch(`/api/dreams?limit=6${data.user?.id ? `&user_id=${encodeURIComponent(data.user.id)}` : ""}`);
+          if (feedResp.ok) {
+            const feedJson = await feedResp.json();
+            setDreams(Array.isArray(feedJson.data) ? feedJson.data : []);
+          }
+        } catch {
+          // ignore and fallback to local storage below
+        }
+
+        const localHistory = JSON.parse(localStorage.getItem("dream_history") || "[]") as DreamRecord[];
+        if (localHistory.length > 0) {
+          setDreams((current) => (current.length > 0 ? current : localHistory.slice(0, 6)));
+        }
       } catch {
         setLocation("/login");
       } finally {
         setLoading(false);
+        setDreamsLoading(false);
       }
     };
 
@@ -200,24 +226,83 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[
-            { label: "Sonhos Criados", value: String(profile?.onboarding_completed ? 1 : 0), icon: "✨" },
-            { label: "Comunidade", value: "Nox Collective", icon: "🌌" },
-            { label: "Status", value: "Ativo", icon: "⚡" },
-          ].map((stat, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 + i * 0.1 }}
-              className="p-4 rounded-lg bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/10 text-center hover:border-primary/30 transition-all"
-            >
-              <div className="text-2xl mb-2">{stat.icon}</div>
-              <p className="text-xs text-muted-foreground">{stat.label}</p>
-              <p className="text-lg font-bold text-white mt-1">{stat.value}</p>
-            </motion.div>
-          ))}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_0.9fr] gap-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="p-6 rounded-xl bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/10 backdrop-blur-sm"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-orbitron font-bold text-white flex items-center gap-2">
+                <MessageSquareQuote className="w-5 h-5 text-primary" />
+                Recent Dream History
+              </h3>
+              <button
+                onClick={() => setLocation("/community")}
+                className="text-xs text-primary hover:text-primary/80 font-mono uppercase tracking-[0.2em]"
+              >
+                View Community
+              </button>
+            </div>
+
+            {dreamsLoading ? (
+              <div className="grid gap-3">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div key={index} className="h-24 rounded-2xl border border-white/10 bg-white/5 animate-pulse" />
+                ))}
+              </div>
+            ) : dreams.length > 0 ? (
+              <div className="space-y-3">
+                {dreams.map((dream, index) => (
+                  <div key={dream.id ?? `${dream.created_at ?? "dream"}-${index}`} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <div className="flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-muted-foreground">
+                        <Orbit className="w-3.5 h-3.5 text-primary" />
+                        {dream.category || category}
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {dream.created_at ? new Date(dream.created_at).toLocaleDateString() : "recent"}
+                      </span>
+                    </div>
+                    <p className="text-sm text-white/90 line-clamp-2">{dream.dream_text}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-white/10 bg-black/10 p-5 text-center text-sm text-muted-foreground">
+                <LoaderCircle className="mx-auto mb-2 h-5 w-5 animate-spin text-primary" />
+                No dream history yet. Start with Universe Generation or AI Dream Analysis.
+              </div>
+            )}
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+            className="p-6 rounded-xl bg-gradient-to-br from-accent/10 to-primary/10 border border-accent/20 backdrop-blur-sm"
+          >
+            <h3 className="text-lg font-orbitron font-bold text-white mb-4 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-accent" />
+              Community Snapshot
+            </h3>
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Dimension</p>
+                <p className={`mt-1 font-medium ${theme.accent}`}>{category}</p>
+                <p className="text-xs mt-1">{theme.label}</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Community</p>
+                <p className="mt-1 font-medium text-white">Nox Collective</p>
+                <p className="text-xs mt-1">Dreams can now be explored, analyzed and compared across dimensions.</p>
+              </div>
+              <button onClick={() => setLocation("/community")} className="w-full rounded-2xl bg-white/10 px-4 py-3 text-white transition hover:bg-white/15">
+                Open Community Feed
+              </button>
+            </div>
+          </motion.div>
         </div>
 
         {/* Call to Action */}

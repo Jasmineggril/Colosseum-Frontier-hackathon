@@ -7,6 +7,7 @@ import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
 import Dashboard from "@/pages/Dashboard";
+import Community from "@/pages/Community";
 import UniverseAwakening from "@/pages/UniverseAwakening";
 import UniverseGeneration from "@/pages/UniverseGeneration";
 import Analysis from "@/pages/Analysis";
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/signup" component={Signup} />
       <Route path="/universe-generation" component={UniverseGeneration} />
       <Route path="/universe-awakening" component={UniverseAwakening} />
+      <Route path="/community" component={Community} />
       <Route path="/dashboard" component={Dashboard} />
       <Route component={NotFound} />
     </Switch>

@@ -46,6 +46,48 @@ function normalizeOpenAIResult(content: string | null): DreamAnalysis {
 
 const router = Router();
 
+router.get("/dreams", async (req, res) => {
+  const supabaseUrl = process.env["VITE_SUPABASE_URL"] || process.env["SUPABASE_URL"];
+  const serviceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"] || process.env["NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY"];
+
+  if (!supabaseUrl || !serviceKey) {
+    res.status(500).json({ error: "Server not configured with Supabase service role key" });
+    return;
+  }
+
+  const limit = Math.min(Number(req.query.limit ?? 12) || 12, 50);
+  const userId = typeof req.query.user_id === "string" ? req.query.user_id : null;
+
+  const url = new URL(`${supabaseUrl.replace(/\/$/, "")}/rest/v1/dreams`);
+  url.searchParams.set("select", "*");
+  url.searchParams.set("order", "created_at.desc");
+  url.searchParams.set("limit", String(limit));
+
+  if (userId) {
+    url.searchParams.set("user_id", `eq.${userId}`);
+  }
+
+  try {
+    const resp = await fetch(url.toString(), {
+      headers: {
+        apikey: serviceKey,
+        Authorization: `Bearer ${serviceKey}`,
+      },
+    });
+
+    if (!resp.ok) {
+      const text = await resp.text();
+      res.status(502).json({ error: "Supabase fetch failed", detail: text });
+      return;
+    }
+
+    const data = await resp.json();
+    res.status(200).json({ data });
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message ?? String(err) });
+  }
+});
+
 router.post("/dreams", async (req, res) => {
   const { dream_text, analysis: clientAnalysis, user_id, category } = req.body ?? {};
 
