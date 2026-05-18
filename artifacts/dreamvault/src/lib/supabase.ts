@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 const rawSupabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const rawSupabaseAnonKey = (import.meta.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJreHBjaWdyb2d5ZXpieHJrb2piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMDQ3NDQsImV4cCI6MjA5MzY4MDc0NH0.rr142If6C4EZtB5Qh1U18xNCkhVY5hBQjznYDDUa-VA as string | undefined)
+const rawSupabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined)
   ?? (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined);
 
 function normalizeSupabaseUrl(url: string | undefined): string | null {
