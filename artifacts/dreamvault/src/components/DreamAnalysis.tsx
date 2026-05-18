@@ -1,12 +1,23 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+
+const categories = ["Cosmic", "Horror", "Fantasy", "Sci-Fi", "Abstract", "Mythological"] as const;
+
+const categoryStyles: Record<(typeof categories)[number], string> = {
+  Cosmic: "from-indigo-500/20 via-violet-500/10 to-cyan-400/10 border-indigo-400/30",
+  Horror: "from-red-500/20 via-zinc-900/40 to-black border-red-400/30",
+  Fantasy: "from-emerald-500/20 via-cyan-500/10 to-violet-500/10 border-emerald-300/30",
+  "Sci-Fi": "from-sky-500/20 via-cyan-500/10 to-indigo-500/10 border-cyan-300/30",
+  Abstract: "from-fuchsia-500/20 via-purple-500/10 to-pink-500/10 border-fuchsia-300/30",
+  Mythological: "from-amber-500/20 via-yellow-500/10 to-orange-500/10 border-amber-300/30",
+};
 
 export default function DreamAnalysis() {
   const [dream, setDream] = useState("");
   const [analysis, setAnalysis] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [category, setCategory] = useState<(typeof categories)[number]>("Cosmic");
   const qc = useQueryClient();
 
   const generateMockAnalysis = (text: string) => {
@@ -42,7 +53,7 @@ export default function DreamAnalysis() {
         const resp = await fetch("/api/dreams", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ dream_text: dream, category: undefined }),
+          body: JSON.stringify({ dream_text: dream, category }),
         });
 
         if (resp.ok) {
@@ -74,7 +85,7 @@ export default function DreamAnalysis() {
       const result = generateMockAnalysis(dream);
       setAnalysis(result);
       const history = JSON.parse(localStorage.getItem("dream_history" ) || "[]");
-      history.unshift({ dream, analysis: result, created_at: new Date().toISOString() });
+      history.unshift({ dream, category, analysis: result, created_at: new Date().toISOString() });
       localStorage.setItem("dream_history", JSON.stringify(history));
     } catch (e: any) {
       setError(e?.message ?? "Erro ao analisar sonho");
@@ -84,11 +95,27 @@ export default function DreamAnalysis() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4 glass rounded-2xl">
-      <h2 className="text-2xl font-bold mb-4">AI Dream Analysis</h2>
+    <div className={`max-w-3xl mx-auto p-4 glass rounded-2xl border bg-gradient-to-br ${categoryStyles[category]}`}>
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <h2 className="text-2xl font-bold">AI Dream Analysis</h2>
+        <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">{category} dimension</span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 mb-4">
+        {categories.map((item) => (
+          <button
+            key={item}
+            type="button"
+            onClick={() => setCategory(item)}
+            className={`rounded-xl border px-3 py-2 text-sm transition-all ${category === item ? "bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.08)]" : "bg-black/10 text-muted-foreground hover:bg-white/5"}`}
+          >
+            {item}
+          </button>
+        ))}
+      </div>
 
       <textarea
-        className="w-full p-4 rounded-lg bg-black/30 text-sm min-h-[120px]"
+        className="w-full p-4 rounded-lg bg-black/30 text-sm min-h-[120px] border border-white/10"
         placeholder="Describe your dream in as much detail as you can..."
         value={dream}
         onChange={(e) => setDream(e.target.value)}
@@ -113,7 +140,7 @@ export default function DreamAnalysis() {
       <div className="mt-6">
         {error && <div className="text-red-400">{error}</div>}
         {analysis && (
-          <div className="mt-3 p-4 rounded-lg bg-black/20">
+          <div className="mt-3 p-4 rounded-lg bg-black/20 border border-white/10">
             <pre className="whitespace-pre-wrap text-sm">{analysis}</pre>
           </div>
         )}
