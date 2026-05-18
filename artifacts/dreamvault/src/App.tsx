@@ -8,6 +8,7 @@ import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
 import Dashboard from "@/pages/Dashboard";
 import UniverseAwakening from "@/pages/UniverseAwakening";
+import Analysis from "@/pages/Analysis";
 
 const queryClient = new QueryClient();
 
@@ -15,6 +16,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/analysis" component={Analysis} />
       <Route path="/login" component={Login} />
       <Route path="/signup" component={Signup} />
       <Route path="/universe-awakening" component={UniverseAwakening} />
