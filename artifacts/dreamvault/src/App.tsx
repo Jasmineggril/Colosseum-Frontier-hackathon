@@ -9,6 +9,7 @@ import Signup from "@/pages/Signup";
 import Dashboard from "@/pages/Dashboard";
 import UniverseAwakening from "@/pages/UniverseAwakening";
 import Analysis from "@/pages/Analysis";
+import { AudioProvider } from "@/lib/audio";
 
 const queryClient = new QueryClient();
 
@@ -29,12 +30,14 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <AudioProvider>
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
           <Router />
         </WouterRouter>
         <Toaster />
       </TooltipProvider>
+      </AudioProvider>
     </QueryClientProvider>
   );
 }

@@ -1,5 +1,6 @@
 import WalletConnect from './WalletConnect';
 import ActivityFeed from './ActivityFeed';
+import AudioControl from './AudioControl';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Wallet, LogIn, UserPlus, Check, Copy } from 'lucide-react';
@@ -71,6 +72,7 @@ export function Navbar() {
           ))}
         </div>
         <div className="flex items-center gap-3">
+          <AudioControl />
           <ActivityFeed />
           <WalletConnect />
           <Link href="/login">

@@ -3,12 +3,14 @@ import { motion } from "framer-motion";
 import { useLocation } from "wouter";
 import { ArrowRight, Sparkles, WandSparkles, Orbit, LoaderCircle, BadgeCheck } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { useAudio } from "@/lib/audio";
 import { completeDreamVaultOnboarding, formatAuthError, syncDreamVaultProfile, type DreamVaultProfile } from "@/lib/profile";
 
 type AwakeningState = "loading" | "ready" | "error";
 
 export default function UniverseAwakening() {
   const [, setLocation] = useLocation();
+  const audio = useAudio();
   const [state, setState] = useState<AwakeningState>("loading");
   const [profile, setProfile] = useState<DreamVaultProfile | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
@@ -71,6 +73,15 @@ export default function UniverseAwakening() {
     setIsEnteringVault(true);
 
     try {
+      // play transition sfx and start ambient for category
+      try {
+        audio.playSfx("transition");
+      } catch {}
+
+      try {
+        await audio.playCategory(category as any);
+      } catch {}
+
       const { error } = await completeDreamVaultOnboarding(profile.id);
 
       if (error) {
